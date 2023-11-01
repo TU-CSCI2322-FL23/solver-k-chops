@@ -21,9 +21,15 @@ data Move = Add | Split
     -- these are defining functions, but i don't think we can do that
 
 initalizeGame :: String -> String -> Int -> Game 
-initalizeGame playerOneName playerTwoName kHands = Game {
-    playerOne = Player {hands = replicate kHands 1, name = playerOneName  },
-    playerTwo = Player {hands = replicate kHands 1, name = playerTwoName  },
-    currentPlayer = playerOne
-}
+initalizeGame playerOneName playerTwoName kHands = 
+    let 
+        p1 = Player {hands = replicate kHands 1, name = playerOneName  }
+        p2 =  Player {hands = replicate kHands 1, name = playerTwoName  }
+
+    in
+        Game {
+            playerOne = p1,
+            playerTwo = p2,
+            currentPlayer = p1
+    }
 --found this stackoverflow link for the function replicate https://stackoverflow.com/questions/22101589/create-a-list-of-specified-length-in-haskell
