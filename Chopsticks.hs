@@ -114,3 +114,15 @@ initializeGame playerOneName playerTwoName kHands =
 
 
 --Other Functions
+
+add :: Game -> [Hand] -> [Hand] -> Game
+add game attacker defender = 
+    let 
+        newAttacker = 
+        newDefender =
+    in
+        game
+
+
+split :: Game -> [Hand] -> Game
+split = undefined
