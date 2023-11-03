@@ -115,13 +115,12 @@ initializeGame playerOneName playerTwoName kHands =
 
 --Other Functions
 
-add :: Game -> [Hand] -> [Hand] -> Game
-add game attacker defender = 
-    let 
-        newAttacker = 
-        newDefender =
-    in
-        game
+add :: Game -> Player -> Player -> Player
+add game attacker defender = updatedPlayer
+    where
+        updatedPlayer = undefined --choose index on the attacker and add that index to another chosen index of the defender if the defenders hand ends up greater than 5 we overflow
+        
+    
 
 
 split :: Game -> [Hand] -> Game
