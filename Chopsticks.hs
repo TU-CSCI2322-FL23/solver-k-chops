@@ -113,4 +113,26 @@ initializeGame playerOneName playerTwoName kHands =
 --Move Functions
 
 
---Other Functions
+--GameState Functions
+getWinner :: Game -> Winner
+getWinner game = 
+    if allHandsEmpty $ playerOne game 
+        then Player PlayerOne
+    else Player PlayerTwo
+
+hasWinner :: Game -> Bool
+hasWinner game 
+    | (allHandsEmpty $ playerOne game) == True || (allHandsEmpty $ playerTwo game) == True = True
+    | otherwise                                                                            = False
+    
+allHandsEmpty :: [Hand] -> Bool
+allHandsEmpty hands = foldr (\h acc -> if h==0 then acc else acc && False) True hands
+
+makeMove :: Game -> Move -> Game
+makeMove game move = move game
+
+legalMoves :: Game -> [Move]
+legalMoves game = undefined
+
+showGame :: Game -> String
+-- showGame game = (showHands $ playerOne game) ++ "\n" ++ (showHands $ playerTwo game)
