@@ -114,6 +114,32 @@ showHand game player handIndex
 
 --Move Functions
 
+askMove :: IO Move
+askMove = do
+    putStrLn "Would you like to Add (1) or Split (2)?"
+    option <- getLine
+    case option of
+        "1" -> return Add
+        "2" -> return Split
+        _ -> do 
+                putStrLn "Wrong input"
+                askMove --ask Dr. Fogarty if I can also print something along with doing askMove
+--askMove either returns Add or Move depending on player input
+--Ex: move <- askMove would make move = Add or Split depending on what the player put
+
+chooseHand :: IO (Int,Int)
+chooseHand = do
+    putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
+    output <- getLine
+    let outputList = words output 
+    case outputList of
+        [a,b] -> return (read a, read b) --unsafe. If a and b aren't numbers, then it'll error
+        _ -> do 
+                putStrLn "Wrong input"
+                chooseHand
+
+
+--used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
 
 --Other Functions
 
