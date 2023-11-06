@@ -117,8 +117,8 @@ initializeGame playerOneName playerTwoName kHands =
 getWinner :: Game -> Winner
 getWinner game = 
     if allHandsEmpty $ playerOne game 
-        then Player PlayerOne
-    else Player PlayerTwo
+        then Player PlayerTwo
+    else Player PlayerOne
 
 hasWinner :: Game -> Bool
 hasWinner game 
@@ -128,8 +128,10 @@ hasWinner game
 allHandsEmpty :: [Hand] -> Bool
 allHandsEmpty hands = foldr (\h acc -> if h==0 then acc else acc && False) True hands
 
-makeMove :: Game -> Move -> Game
-makeMove game move = move game
+-- makeMove :: Game -> Move -> (Int,Int) -> Game
+-- makeMove game move (attacker,target) = 
+--     if move==Add
+--         then watch AOT
 
 legalMoves :: Game -> [Move]
 legalMoves game = undefined
