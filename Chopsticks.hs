@@ -137,4 +137,5 @@ legalMoves :: Game -> [Move]
 legalMoves game = undefined
 
 showGame :: Game -> String
+showGame game = showHands game
 -- showGame game = (showHands $ playerOne game) ++ "\n" ++ (showHands $ playerTwo game)
