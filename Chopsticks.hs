@@ -112,7 +112,7 @@ showHand game player handIndex
 --                                                                        "---.(_____)
 
 
---Move Functions
+--IO Functions
 
 askMove :: IO Move
 askMove = do
@@ -127,6 +127,9 @@ askMove = do
 --askMove either returns Add or Move depending on player input
 --Ex: move <- askMove would make move = Add or Split depending on what the player put
 
+--used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
+
+
 chooseHand :: IO (Int,Int)
 chooseHand = do
     putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
@@ -139,7 +142,6 @@ chooseHand = do
                 chooseHand
 
 
---used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
 
 --Other Functions
 
@@ -153,3 +155,32 @@ add game attacker defender = updatedPlayer
 
 split :: Game -> [Hand] -> Game
 split = undefined
+
+
+
+--GameState Functions
+getWinner :: Game -> Winner
+getWinner game = 
+    if allHandsEmpty $ playerOne game 
+        then PlayerTwo
+    else PlayerOne
+
+
+hasWinner :: Game -> Bool
+hasWinner game 
+    | (allHandsEmpty $ playerOne game) == True || (allHandsEmpty $ playerTwo game) == True = True
+    | otherwise                                                                            = False
+    
+allHandsEmpty :: [Hand] -> Bool
+allHandsEmpty hands = foldr (\h acc -> if h==0 then acc else acc && False) True hands
+
+-- makeMove :: Game -> Move -> (Int,Int) -> Game
+-- makeMove game move (attacker,target) = 
+--     if move==Add
+--         then watch AOT
+legalMoves :: Game -> [Move]
+legalMoves game = undefined
+
+-- showGame :: Game -> String
+-- showGame game = showHands game
+-- showGame game = (showHands $ playerOne game) ++ "\n" ++ (showHands $ playerTwo game)
