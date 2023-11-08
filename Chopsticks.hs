@@ -118,13 +118,16 @@ initializeGame playerOneName playerTwoName kHands =
 -- A player is a hand a hand is a list of ints i.e [1,1,1,1,1,1] each 1 is a hand the 1 represents how many fingers are on a hand. OVerflow if >5 go back to 1 so 6 -> 1 7 -> 2 etc.
 --make a new list every time the hand is updated
 
-makeMove :: IO Game -> Move -> ([Int], [Int]) -> Game
-makeMove game move (attacker, defender) = 
+makeMove :: IO Game -> Move -> (Int, Int) -> Game
+makeMove game move (aHand, dHand) = 
     if move == Add
-    then attackerHand = getHand attacker chooseHand
-         defenderHand = getHand defender chooseHand
-         sumFingers = attackerHand + defenderHand
-         updatedDefenderHand = sumFingers `mod` 5
-         updatedPlayer = updateHand defender chooseHand updatedDefenderHand 
-    else 
-        let split = fromIntegral (sum hand) / fromIntegral (length hand)
+    then 
+        let attackerHand = getHand (playerOne game) aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
+            defenderHand = getHand (playerTwo game) dHand
+            sumFingers = attackerHand + defenderHand
+            overflow = sumFingers `mod` 5
+            updateDefenderHand = undefined
+        in updateDefenderHand
+    else updatedAttackerHand
+        where split = fromIntegral (sum aHand) / fromIntegral (length aHand)
+              updatedAttackerHand = undefined
