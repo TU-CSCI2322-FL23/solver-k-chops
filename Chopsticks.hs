@@ -8,18 +8,11 @@ data Game = Game {
     playerTwo :: [Hand],
     p1Name :: String,
     p2Name :: String,
-    turn :: Player
+    turn :: Player,
+    turnCount :: Int
 } deriving (Show)
 
 data Player = PlayerOne | PlayerTwo deriving (Show)
-
-
--- data Side = Side {
---     hands :: [Hand],
---     name :: String
--- } deriving Show
-
-
 
 data Move = Add | Split deriving (Show, Eq)
     --a move takes in a game and returns a game
@@ -36,7 +29,8 @@ initializeGame playerOneName playerTwoName kHands =
             playerTwo = hands,
             p1Name = playerOneName,
             p2Name = playerTwoName,
-            turn = PlayerOne
+            turn = PlayerOne,
+            turnCount = 50
         }
 --found this stackoverflow link for the function replicate https://stackoverflow.com/questions/22101589/create-a-list-of-specified-length-in-haskell
 
@@ -157,29 +151,17 @@ makeMove game move (aHand, dHand) =
             defenderHand = getHand (playerTwo game) dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
             sumFingers = attackerHand + defenderHand --add attacker hand too defender hand
             overflow = sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
-            updateDefenderHand = updateHand (playerTwo game) dHand overflow --update defender hand with overflow 
+            updateDefenderHand = updateHand (playerTwo game) dHand overflow --update defender hand with overflow, uses helper updateHand to save ar correct index
         in updateDefenderHand
-    else updatedAttackerHand
+    else updatedAttackerHand --I think we will need to change/remove this move entirely, but this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
         where split = fromIntegral (sum (playerOne game)) `div` fromIntegral (length (playerOne game))
-              updatedAttackerHand = replicate (length (playerOne game)) split
+              updatedAttackerHand = replicate (length (playerOne game)) split 
 
 
-updateHand :: [Hand] -> Int -> Int -> [Hand]
-updateHand [] index newValue = error "No Hand Found"
+updateHand :: [Hand] -> Int -> Int -> [Hand] --this is a helper function that makeMove uses to "place" the NEW value at the given index.
+updateHand [] index newValue = error "No Hand Found" 
 updateHand [x] index newValue = [newValue]
 updateHand (x:xs) index newValue = if index == 0 then newValue:xs else x:updateHand xs (index - 1) newValue
-
---getHand :: [Hand] -> Int -> Hand
---getHand [] index = error "No Hand Found"
---getHand [x] index = x
---getHand (x:xs) index =
---    if index == 0
-   --     then
-     --       x
-    --else
-      --  getHand xs (index - 1)
-
-
 
 --GameState Functions
 getWinner :: Game -> Winner
@@ -197,10 +179,6 @@ hasWinner game
 allHandsEmpty :: [Hand] -> Bool
 allHandsEmpty hands = foldr (\h acc -> if h==0 then acc else acc && False) True hands
 
--- makeMove :: Game -> Move -> (Int,Int) -> Game
--- makeMove game move (attacker,target) = 
---     if move==Add
---         then watch AOT
 legalMoves :: Game -> [Move]
 legalMoves game = undefined
 
