@@ -180,7 +180,17 @@ allHandsEmpty :: [Hand] -> Bool
 allHandsEmpty hands = foldr (\h acc -> if h==0 then acc else acc && False) True hands
 
 legalMoves :: Game -> [Move]
-legalMoves game = undefined
+legalMoves game = 
+    if canSplit $ turn game
+        then [Add, Split]
+    else [Add]
+    where canSplit :: Player -> Bool
+          canSplit p = 
+            case p of 
+                PlayerOne -> canSplitHelp $ playerOne game
+                PlayerTwo -> canSplitHelp $ playerTwo game
+          canSplitHelp :: [Hand] -> Bool
+          canSplitHelp hands = (sum hands) >= (length hands)
 
 -- showGame :: Game -> String
 -- showGame game = showHands game
