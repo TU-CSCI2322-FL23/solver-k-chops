@@ -21,7 +21,7 @@ data Player = PlayerOne | PlayerTwo deriving (Show)
 
 
 
-data Move = Add | Split
+data Move = Add | Split deriving (Show, Eq)
     --a move takes in a game and returns a game
     -- these are defining functions, but i don't think we can do that
 
@@ -104,6 +104,7 @@ showHand game player handIndex
             PlayerOne -> playerOne game
             PlayerTwo -> playerTwo game
         currentHand = getHand playerHand handIndex
+
 --showHand takes a player and their hand index and returns ascii art for it
 --Ex: showHand PlayerOne 2 where playerOne's hands are [1,2,3,4,0] ==  "---'____) \n" ++
 --                                                                        "      _________) \n" ++
@@ -145,16 +146,38 @@ chooseHand = do
 
 --Other Functions
 
-add :: Game -> Player -> Player -> Player
-add game attacker defender = updatedPlayer
-    where
-        updatedPlayer = undefined --choose index on the attacker and add that index to another chosen index of the defender if the defenders hand ends up greater than 5 we overflow
-        
-    
+-- A player is a hand a hand is a list of ints i.e [1,1,1,1,1,1] each 1 is a hand the 1 represents how many fingers are on a hand. OVerflow if >5 go back to 1 so 6 -> 1 7 -> 2 etc.
+--make a new list every time the hand is updated
+
+makeMove :: Game -> Move -> (Int, Int) -> [Hand]
+makeMove game move (aHand, dHand) = 
+    if move == Add
+    then 
+        let attackerHand = getHand (playerOne game) aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
+            defenderHand = getHand (playerTwo game) dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
+            sumFingers = attackerHand + defenderHand --add attacker hand too defender hand
+            overflow = sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
+            updateDefenderHand = updateHand (playerTwo game) dHand overflow --update defender hand with overflow 
+        in updateDefenderHand
+    else updatedAttackerHand
+        where split = fromIntegral (sum (playerOne game)) `div` fromIntegral (length (playerOne game))
+              updatedAttackerHand = replicate (length (playerOne game)) split
 
 
-split :: Game -> [Hand] -> Game
-split = undefined
+updateHand :: [Hand] -> Int -> Int -> [Hand]
+updateHand [] index newValue = error "No Hand Found"
+updateHand [x] index newValue = [newValue]
+updateHand (x:xs) index newValue = if index == 0 then newValue:xs else x:updateHand xs (index - 1) newValue
+
+--getHand :: [Hand] -> Int -> Hand
+--getHand [] index = error "No Hand Found"
+--getHand [x] index = x
+--getHand (x:xs) index =
+--    if index == 0
+   --     then
+     --       x
+    --else
+      --  getHand xs (index - 1)
 
 
 
