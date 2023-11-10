@@ -143,45 +143,45 @@ chooseHand = do
 -- A player is a hand a hand is a list of ints i.e [1,1,1,1,1,1] each 1 is a hand the 1 represents how many fingers are on a hand. OVerflow if >5 go back to 1 so 6 -> 1 7 -> 2 etc.
 --make a new list every time the hand is updated
 
-makeMove :: Game -> Move -> (Int, Int) -> [Hand]
-makeMove game move (aHand, dHand) = 
-    if move == Add
-    then 
-        let attackerHand = getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
-            defenderHand = getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
-            sumFingers = attackerHand + defenderHand --add attacker hand too defender hand
-            overflow = sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
-            updateDefenderHand = updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save ar correct index
-        in updateDefenderHand
-    else updatedAttackerHand --I think we will need to change/remove this move entirely, but this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-        where 
-            split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
-            updatedAttackerHand = replicate (length attackerHands) split
-            playerTurn = turn game 
-            attackerHands = if (turn game) == PlayerOne then playerOne game else playerTwo game
-            defenderHands = if (turn game) == PlayerOne then playerTwo game else playerOne game 
+makeMove :: Game -> Move -> (Int, Int) -> Game
+makeMove game Add (aHand, dHand) = 
+    let (attackerHands, defenderHands) = handsFor game
+        attackerHand = getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
+        defenderHand = getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
+        sumFingers = attackerHand + defenderHand --add attacker hand too defender hand
+        overflow = sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
+        updateDefenderHand = updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save ar correct index
+    in updateSide game (opponent $ turn game) updateDefenderHand
+makeMove game Split (aHand, dHand) = updateSide game (turn game) updatedAttackerHand --I think we will need to change/remove this move entirely, but this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
+        where (attackerHands, defenderHands) = handsFor game
+              split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+              updatedAttackerHand = replicate (length attackerHands) split
+              playerTurn = turn game 
+
+handsFor :: Game -> ([Hand], [Hand])
+handsFor game = 
+    case turn game of 
+        PlayerOne -> (playerOne game, playerTwo game)
+        PlayerTwo -> (playerTwo game, playerOne game) 
                
+updateSide :: Game -> Player -> [Hand] -> Game
+updateSide game PlayerOne hand = game {playerOne = hand, turn = opponent $ turn game, turnCount = (turnCount game) - 1}
+updateSide game PlayerTwo hand = game {playerTwo = hand, turn = opponent $ turn game, turnCount = (turnCount game) - 1}
 
 updateHand :: [Hand] -> Int -> Int -> [Hand] --this is a helper function that makeMove uses to "place" the NEW value at the given index.
 updateHand [] index newValue = error "No Hand Found" 
-updateHand [x] index newValue = [newValue]
-updateHand (x:xs) index newValue = if index == 0 then newValue:xs else x:updateHand xs (index - 1) newValue
+updateHand (x:xs) 0 0 = xs
+updateHand (x:xs) 0 newValue = newValue:xs
+updateHand (x:xs) index newValue = x:updateHand xs (index - 1) newValue
 
 --GameState Functions
-getWinner :: Game -> Winner
+getWinner :: Game -> Maybe Winner
 getWinner game = 
-    if allHandsEmpty $ playerOne game 
-        then PlayerTwo
-    else PlayerOne
-
-
-hasWinner :: Game -> Bool
-hasWinner game 
-    | (allHandsEmpty $ playerOne game) == True || (allHandsEmpty $ playerTwo game) == True = True
-    | otherwise                                                                            = False
-    
-allHandsEmpty :: [Hand] -> Bool
-allHandsEmpty hands = foldr (\h acc -> if h==0 then acc else acc && False) True hands
+    if null $ playerOne game 
+        then Just PlayerTwo
+    else if null $ playerTwo game 
+        then Just PlayerOne
+    else Nothing
 
 legalMoves :: Game -> [Move]
 legalMoves game = 
@@ -196,38 +196,11 @@ legalMoves game =
           canSplitHelp :: [Hand] -> Bool
           canSplitHelp hands = (sum hands) >= (length hands)
 
+opponent PlayerOne = PlayerTwo
+opponent PlayerTwo = PlayerOne
 
-updateGame :: Game -> [Hand] -> Move -> Player -> Game
-updateGame game updatedHand move player  
-        | player == PlayerOne && move == Split = 
-            Game {
-                playerOne = updatedHand,
-                playerTwo = playerTwo game,
-                p1Name = p1Name game,
-                p2Name = p2Name game,
-                turn = PlayerTwo,
-                turnCount = (turnCount game) - 1 } 
-        | player == PlayerOne && move == Add =
-            Game {
-                playerOne = playerOne game,
-                playerTwo = updatedHand,
-                p1Name = p1Name game,
-                p2Name = p2Name game,
-                turn = PlayerTwo,
-                turnCount = (turnCount game) - 1 }
-        | player == PlayerTwo && move == Add =
-            Game {
-                playerOne = updatedHand,
-                playerTwo = playerTwo game,
-                p1Name = p1Name game,
-                p2Name = p2Name game,
-                turn = PlayerOne,
-                turnCount = (turnCount game) - 1 }
-        | player == PlayerTwo && move == Split =
-            Game {
-                playerOne = playerOne game,
-                playerTwo = updatedHand,
-                p1Name = p1Name game,
-                p2Name = p2Name game,
-                turn = PlayerOne,
-                turnCount = (turnCount game) - 1 }
+showGame :: Game -> String
+showGame game = undefined
+
+prettyShowGame :: Game -> String
+prettyShowGame game = undefined
