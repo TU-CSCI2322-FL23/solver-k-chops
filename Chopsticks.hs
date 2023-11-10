@@ -12,7 +12,7 @@ data Game = Game {
     turnCount :: Int
 } deriving (Show)
 
-data Player = PlayerOne | PlayerTwo deriving (Show)
+data Player = PlayerOne | PlayerTwo deriving (Show, Eq)
 
 data Move = Add | Split deriving (Show, Eq)
     --a move takes in a game and returns a game
@@ -147,16 +147,20 @@ makeMove :: Game -> Move -> (Int, Int) -> [Hand]
 makeMove game move (aHand, dHand) = 
     if move == Add
     then 
-        let attackerHand = getHand (playerOne game) aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
-            defenderHand = getHand (playerTwo game) dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
+        let attackerHand = getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
+            defenderHand = getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
             sumFingers = attackerHand + defenderHand --add attacker hand too defender hand
             overflow = sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
-            updateDefenderHand = updateHand (playerTwo game) dHand overflow --update defender hand with overflow, uses helper updateHand to save ar correct index
+            updateDefenderHand = updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save ar correct index
         in updateDefenderHand
     else updatedAttackerHand --I think we will need to change/remove this move entirely, but this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-        where split = fromIntegral (sum (playerOne game)) `div` fromIntegral (length (playerOne game))
-              updatedAttackerHand = replicate (length (playerOne game)) split 
-
+        where 
+            split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+            updatedAttackerHand = replicate (length attackerHands) split
+            playerTurn = turn game 
+            attackerHands = if (turn game) == PlayerOne then playerOne game else playerTwo game
+            defenderHands = if (turn game) == PlayerOne then playerTwo game else playerOne game 
+               
 
 updateHand :: [Hand] -> Int -> Int -> [Hand] --this is a helper function that makeMove uses to "place" the NEW value at the given index.
 updateHand [] index newValue = error "No Hand Found" 
@@ -192,6 +196,38 @@ legalMoves game =
           canSplitHelp :: [Hand] -> Bool
           canSplitHelp hands = (sum hands) >= (length hands)
 
--- showGame :: Game -> String
--- showGame game = showHands game
--- showGame game = (showHands $ playerOne game) ++ "\n" ++ (showHands $ playerTwo game)
+
+updateGame :: Game -> [Hand] -> Move -> Player -> Game
+updateGame game updatedHand move player  
+        | player == PlayerOne && move == Split = 
+            Game {
+                playerOne = updatedHand,
+                playerTwo = playerTwo game,
+                p1Name = p1Name game,
+                p2Name = p2Name game,
+                turn = PlayerTwo,
+                turnCount = (turnCount game) - 1 } 
+        | player == PlayerOne && move == Add =
+            Game {
+                playerOne = playerOne game,
+                playerTwo = updatedHand,
+                p1Name = p1Name game,
+                p2Name = p2Name game,
+                turn = PlayerTwo,
+                turnCount = (turnCount game) - 1 }
+        | player == PlayerTwo && move == Add =
+            Game {
+                playerOne = updatedHand,
+                playerTwo = playerTwo game,
+                p1Name = p1Name game,
+                p2Name = p2Name game,
+                turn = PlayerOne,
+                turnCount = (turnCount game) - 1 }
+        | player == PlayerTwo && move == Split =
+            Game {
+                playerOne = playerOne game,
+                playerTwo = updatedHand,
+                p1Name = p1Name game,
+                p2Name = p2Name game,
+                turn = PlayerOne,
+                turnCount = (turnCount game) - 1 }
