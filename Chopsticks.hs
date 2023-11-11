@@ -14,7 +14,7 @@ data Game = Game {
 
 data Player = PlayerOne | PlayerTwo deriving (Show, Eq)
 
-data Move = Add | Split deriving (Show, Eq)
+data Move = Add Int Int | Split deriving (Show, Eq)
     --a move takes in a game and returns a game
     -- these are defining functions, but i don't think we can do that
 
@@ -114,7 +114,7 @@ askMove = do
     putStrLn "Would you like to Add (1) or Split (2)?"
     option <- getLine
     case option of
-        "1" -> return Add
+        -- "1" -> return Add  --this needs to be adjusted to account for updated Add type
         "2" -> return Split
         _ -> do 
                 putStrLn "Wrong input"
@@ -143,8 +143,8 @@ chooseHand = do
 -- A player is a hand a hand is a list of ints i.e [1,1,1,1,1,1] each 1 is a hand the 1 represents how many fingers are on a hand. OVerflow if >5 go back to 1 so 6 -> 1 7 -> 2 etc.
 --make a new list every time the hand is updated
 
-makeMove :: Game -> Move -> (Int, Int) -> Game
-makeMove game Add (aHand, dHand) = 
+makeMove :: Game -> Move -> Game
+makeMove game (Add aHand dHand) = 
     let (attackerHands, defenderHands) = handsFor game
         attackerHand = getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
         defenderHand = getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
@@ -152,11 +152,10 @@ makeMove game Add (aHand, dHand) =
         overflow = sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
         updateDefenderHand = updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save ar correct index
     in updateSide game (opponent $ turn game) updateDefenderHand
-makeMove game Split (aHand, dHand) = updateSide game (turn game) updatedAttackerHand --I think we will need to change/remove this move entirely, but this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
+makeMove game Split = updateSide game (turn game) updatedAttackerHand --I think we will need to change/remove this move entirely, but this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
         where (attackerHands, defenderHands) = handsFor game
               split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
               updatedAttackerHand = replicate (length attackerHands) split
-              playerTurn = turn game 
 
 handsFor :: Game -> ([Hand], [Hand])
 handsFor game = 
@@ -183,18 +182,18 @@ getWinner game =
         then Just PlayerOne
     else Nothing
 
-legalMoves :: Game -> [Move]
-legalMoves game = 
-    if canSplit $ turn game
-        then [Add, Split]
-    else [Add]
-    where canSplit :: Player -> Bool
-          canSplit p = 
-            case p of 
-                PlayerOne -> canSplitHelp $ playerOne game
-                PlayerTwo -> canSplitHelp $ playerTwo game
-          canSplitHelp :: [Hand] -> Bool
-          canSplitHelp hands = (sum hands) >= (length hands)
+-- legalMoves :: Game -> [Move]
+-- legalMoves game = 
+--     if canSplit $ turn game
+--         then [Add, Split]
+--     else [Add]
+--     where canSplit :: Player -> Bool
+--           canSplit p = 
+--             case p of 
+--                 PlayerOne -> canSplitHelp $ playerOne game
+--                 PlayerTwo -> canSplitHelp $ playerTwo game
+--           canSplitHelp :: [Hand] -> Bool
+--           canSplitHelp hands = (sum hands) >= (length hands)
 
 opponent PlayerOne = PlayerTwo
 opponent PlayerTwo = PlayerOne
