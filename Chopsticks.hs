@@ -125,48 +125,52 @@ chooseHand = do
 --make a new list every time the hand is updated
 
 makeMove :: Game -> Move -> Maybe Game
-makeMove game (Add aHand dHand) = -- make both makeMove definitions check if move is valid and return Nothing if so before computing effect?
-    do  (attackerHands, defenderHands) <- handsFor game
-        attackerHand <- getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
+makeMove game move = -- make both makeMove definitions check if move is valid and return Nothing if so before computing effect?
+    let (attackerHands, defenderHands) = handsFor game
+    in case move of 
+        (Add aHand dHand) -> 
+            do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
+                updateSide game (opponent $ turn game) updateDefenderHand
+        Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
+            do  split <- Just $ fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+                updatedAttackerHand <- Just $ replicate (length attackerHands) split
+                updateSide game (turn game) updatedAttackerHand
+
+handsFor :: Game -> ([Hand], [Hand])
+handsFor game = 
+    case turn game of 
+        PlayerOne -> (playerOne game, playerTwo game)
+        PlayerTwo -> (playerTwo game, playerOne game) 
+
+addHands :: [Hand] -> [Hand] -> Int -> Int -> Maybe [Hand]
+addHands attackerHands defenderHands aHand dHand = 
+    do  attackerHand <- getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
         defenderHand <- getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
         sumFingers <- Just $ attackerHand + defenderHand --add attacker hand too defender hand
         overflow <- Just $ sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
-        updateDefenderHand <- updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save at correct index
-        updateSide game (opponent $ turn game) updateDefenderHand
-makeMove game Split =  --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-    do  (attackerHands, defenderHands) <- handsFor game
-        split <- Just $ fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
-        updatedAttackerHand <- Just $ replicate (length attackerHands) split
-        updateSide game (turn game) updatedAttackerHand
+        updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save at correct index
+    where getHand :: [Hand] -> Int -> Maybe Hand
+          getHand [] index = Nothing
+          getHand [x] index = 
+            if index == 0 
+                then Just x
+            else Nothing
+          getHand (x:xs) index =
+            if index == 0
+                then Just x
+            else getHand xs (index - 1)
+          -- getHand shows the number of fingers on that hand
+          --Ex: getHand playerOne game 5 (where playerOne Hands are [2,1,3,5,4]) = 4
 
-handsFor :: Game -> Maybe ([Hand], [Hand])
-handsFor game = 
-    case turn game of 
-        PlayerOne -> Just (playerOne game, playerTwo game)
-        PlayerTwo -> Just (playerTwo game, playerOne game) 
-
-getHand :: [Hand] -> Int -> Maybe Hand
-getHand [] index = Nothing
-getHand [x] index = 
-    if index == 0 
-        then Just x
-    else Nothing
-getHand (x:xs) index =
-    if index == 0
-        then Just x
-    else getHand xs (index - 1)
-
--- getHand shows the number of fingers on that hand
---Ex: getHand playerOne game 5 (where playerOne Hands are [2,1,3,5,4]) = 4
-
-updateHand :: [Hand] -> Int -> Int -> Maybe [Hand] --this is a helper function that makeMove uses to "place" the NEW value at the given index.
-updateHand [] index newValue = Nothing 
-updateHand (x:xs) 0 0 = Just xs
-updateHand (x:xs) 0 newValue = Just $ newValue:xs
-updateHand (x:xs) index newValue = consMaybeList x (updateHand xs (index - 1) newValue)
-    where consMaybeList :: Hand -> Maybe [Hand] -> Maybe [Hand]
-          consMaybeList _ Nothing = Nothing
-          consMaybeList h (Just lst) = Just (h:lst)
+          updateHand :: [Hand] -> Int -> Int -> Maybe [Hand]
+          updateHand [] index newValue = Nothing 
+          updateHand (x:xs) 0 0 = Just xs
+          updateHand (x:xs) 0 newValue = Just $ newValue:xs
+          updateHand (x:xs) index newValue = consMaybeList x (updateHand xs (index - 1) newValue)
+            where consMaybeList :: Hand -> Maybe [Hand] -> Maybe [Hand]
+                  consMaybeList _ Nothing = Nothing
+                  consMaybeList h (Just lst) = Just (h:lst)
+          --this is a helper function that addHands uses to "place" the NEW value at the given index.
 
 updateSide :: Game -> Player -> [Hand] -> Maybe Game
 updateSide game PlayerOne hand = Just $ game {playerOne = hand, turn = opponent $ turn game, turnCount = (turnCount game) - 1}
