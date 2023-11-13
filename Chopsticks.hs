@@ -1,4 +1,5 @@
 import Data.Maybe
+import Data.List
 
 type Hand = Int
 type Winner = Player
@@ -31,7 +32,7 @@ initializeGame playerOneName playerTwoName kHands =
         }
 
 
---Player Functions
+--Pretty Print Helper Functions
 
 handAsciiArt :: Int -> String
 handAsciiArt 0 = "---'____) \n" ++
@@ -204,7 +205,13 @@ opponent PlayerOne = PlayerTwo
 opponent PlayerTwo = PlayerOne
 
 showGame :: Game -> String
-showGame game = undefined
+showGame game = (p1Name game) ++ " -> " ++ hand1 ++ "\n --------------- \n" ++ (p2Name game) ++ " -> " ++ hand2 ++ "\n" ++ turnName ++ "'s turn! " ++ (show $ turnCount game) ++ " turns left!"
+    where hand1 :: String
+          hand1 = intercalate " " (map show (playerOne game))
+          hand2 :: String
+          hand2 = intercalate " " (map show (playerTwo game))
+          turnName :: String
+          turnName = if ((turn game) == PlayerOne) then p1Name game else p2Name game
 
 prettyShowGame :: Game -> String
 prettyShowGame game = undefined
