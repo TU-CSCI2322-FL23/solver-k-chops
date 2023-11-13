@@ -190,8 +190,12 @@ getWinner game =
     else Nothing
 
 legalMoves :: Game -> [Move]
-legalMoves game = Split : allAdds
-    where allAdds :: [Move]
+legalMoves game = 
+    if ((sum pHand) `mod` (length pHand) == 0)
+        then Split : allAdds
+    else allAdds
+    where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
+          allAdds :: [Move]
           allAdds = 
             let numP1Hands = length $ playerOne game
                 numP2Hands = length $ playerTwo game
@@ -199,8 +203,7 @@ legalMoves game = Split : allAdds
                 p2Indices = [0..numP2Hands-1]
                 crossProd = [(x, y) | x <- p1Indices, y <- p2Indices]
             in [Add (fst prod) (snd prod)| prod <- crossProd]
--- Splitting will always be legal because the current implementation ensures that empty hands are removed and new hands cannot be added; 
--- a Split will always result in each of the player's hands having the floor of the player's total number of fingers divided by how many existing hands they have.
+-- splitting is legal when the number of fingers can be divided evenly among the remaining hands
 -- an Add move is legal if both Ints provided are valid indices into the two players' hands; any existing hand can attack any existing hand of its opponent
 
 opponent :: Player -> Player
