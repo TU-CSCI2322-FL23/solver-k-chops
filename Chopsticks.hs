@@ -125,16 +125,18 @@ chooseHand = do
 --make a new list every time the hand is updated
 
 makeMove :: Game -> Move -> Maybe Game
-makeMove game move = -- make both makeMove definitions check if move is valid and return Nothing if so before computing effect?
-    let (attackerHands, defenderHands) = handsFor game
-    in case move of 
-        (Add aHand dHand) -> 
-            do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
-                updateSide game (opponent $ turn game) updateDefenderHand
-        Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-            do  split <- Just $ fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
-                updatedAttackerHand <- Just $ replicate (length attackerHands) split
-                updateSide game (turn game) updatedAttackerHand
+makeMove game move = 
+    if (move `elem` (legalMoves game))
+        then let (attackerHands, defenderHands) = handsFor game
+             in case move of 
+                 (Add aHand dHand) -> 
+                     do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
+                         updateSide game (opponent $ turn game) updateDefenderHand
+                 Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
+                     do  split <- Just $ fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+                         updatedAttackerHand <- Just $ replicate (length attackerHands) split
+                         updateSide game (turn game) updatedAttackerHand
+    else Nothing
 
 handsFor :: Game -> ([Hand], [Hand])
 handsFor game = 
@@ -186,18 +188,19 @@ getWinner game =
         then Just PlayerOne
     else Nothing
 
--- legalMoves :: Game -> [Move]
--- legalMoves game = 
---     if canSplit $ turn game
---         then [Add, Split]
---     else [Add]
---     where canSplit :: Player -> Bool
---           canSplit p = 
---             case p of 
---                 PlayerOne -> canSplitHelp $ playerOne game
---                 PlayerTwo -> canSplitHelp $ playerTwo game
---           canSplitHelp :: [Hand] -> Bool
---           canSplitHelp hands = (sum hands) >= (length hands)
+legalMoves :: Game -> [Move]
+legalMoves game = Split : allAdds
+    where allAdds :: [Move]
+          allAdds = 
+            let numP1Hands = length $ playerOne game
+                numP2Hands = length $ playerTwo game
+                p1Indices = [0..numP1Hands-1]
+                p2Indices = [0..numP2Hands-1]
+                crossProd = [(x, y) | x <- p1Indices, y <- p2Indices]
+            in [Add (fst prod) (snd prod)| prod <- crossProd]
+-- Splitting will always be legal because the current implementation ensures that empty hands are removed and new hands cannot be added; 
+-- a Split will always result in each of the player's hands having the floor of the player's total number of fingers divided by how many existing hands they have.
+-- an Add move is legal if both Ints provided are valid indices into the two players' hands; any existing hand can attack any existing hand of its opponent
 
 opponent :: Player -> Player
 opponent PlayerOne = PlayerTwo
