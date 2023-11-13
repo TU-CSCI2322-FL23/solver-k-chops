@@ -207,8 +207,8 @@ opponent :: Player -> Player
 opponent PlayerOne = PlayerTwo
 opponent PlayerTwo = PlayerOne
 
-showGame :: Game -> String
-showGame game = (p1Name game) ++ " -> " ++ hand1 ++ "\n --------------- \n" ++ (p2Name game) ++ " -> " ++ hand2 ++ "\n" ++ turnName ++ "'s turn! " ++ (show $ turnCount game) ++ " turns left!"
+showGame :: Game -> IO ()
+showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------- \n" ++ (p2Name game) ++ " -> " ++ hand2 ++ "\n" ++ turnName ++ "'s turn! " ++ (show $ turnCount game) ++ " turns left!")
     where hand1 :: String
           hand1 = intercalate " " (map show (playerOne game))
           hand2 :: String
