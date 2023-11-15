@@ -1,3 +1,4 @@
+module Chopsticks where
 import Data.Maybe
 import Data.List
 
