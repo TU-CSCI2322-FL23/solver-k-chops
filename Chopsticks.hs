@@ -1,5 +1,6 @@
 import Data.Maybe
 import Data.List
+import Data.List.Split
 
 type Hand = Int
 type Winner = Player
@@ -189,6 +190,8 @@ getWinner game =
         then Just PlayerOne
     else Nothing
 
+
+
 legalMoves :: Game -> [Move]
 legalMoves game = 
     if ((sum pHand) `mod` (length pHand) == 0)
@@ -221,3 +224,10 @@ showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------
 
 prettyShowGame :: Game -> String
 prettyShowGame game = undefined
+
+describeGame :: Game -> String
+describeGame game = 
+    "Player1:" ++ (p1Name game) ++ "," ++ "Player2:" ++ (p2Name game) ++ "," ++ "P1Hands:" ++ (show (playerOne game)) ++ "," ++ "P2Hands:" ++ (show (playerTwo game)) ++ "," ++ "CurrentTurn:" ++ (show (turn game)) ++ "," ++ "TurnCount:" ++ (show (turnCount game))
+--Describe Game takes a game and provides a string that describes the game fully and is reversible to create a game if needed
+--Ex: describeGame game = "Player1:Ashwin,Player2:DickMan,P1Hands:[1,1,1,1],P2Hands:[1,1,1,1],CurrentTurn:PlayerOne,TurnCount:50"    
+
