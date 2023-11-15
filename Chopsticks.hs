@@ -221,3 +221,47 @@ showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------
 
 prettyShowGame :: Game -> String
 prettyShowGame game = undefined
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+handDiff :: [Hand] -> [Hand] -> Int
+handDiff playerA playerB = (length playerA) - (length playerB) 
+--calculates the difference in hands between players. If the resulting Int is negative, than playerA has less hands than playerB. If resulting Int is positive, than playerA has more hands 
+--Ex: handDiff (playerOne game) (playerTwo game) where playerOne has [2,3] and playerTwo has [4,5,6] = -1 
+
+scoreDist :: [Hand] ->  Int
+scoreDist player = 
+    let 
+        totalFingers = sum player
+        avgFingerPerHand = totalFingers `div` (length player)
+        dist = [x - avgFingerPerHand | x <- player]
+        scoredDist = map (* (-1)) dist --this basically says that every negative number is positive and every positive number is negative. This promotes players where their hands have less fingers than average. It'll mean players play more defensively 
+    in
+        sum scoredDist
+
+scoreGame :: Game -> (Int,Int)
+scoreGame game = 
+    let 
+        p1HandDiff = handDiff (playerOne game) (playerTwo game)
+        p2HandDiff = p1HandDiff * (-1)
+        p1ScoreDist = scoreDist (playerOne game)
+        p2ScoreDist = scoreDist (playerTwo game)
+    in
+        (p1HandDiff + p1ScoreDist, p2HandDiff + p2ScoreDist)
+
+
+
+--if a player has less hand than the other player, they get a penalty
+--even spread of fingers 
