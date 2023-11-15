@@ -188,6 +188,7 @@ getResult game
     | (turnCount game) == 0 = Just Tie
     | null $ (playerOne game) = Just (Winner PlayerTwo)
     | null $ (playerTwo game) = Just (Winner PlayerOne)
+    | otherwise = Nothing
     
 
 
