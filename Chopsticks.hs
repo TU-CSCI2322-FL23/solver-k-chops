@@ -251,7 +251,9 @@ scoreDist player =
     in
         sum scoredDist
 
-scoreGame :: Game -> (Int,Int)
+
+
+scoreGame :: Game -> (Int, Int)
 scoreGame game = 
     let 
         p1HandDiff = handDiff (playerOne game) (playerTwo game)
@@ -261,7 +263,11 @@ scoreGame game =
     in
         (p1HandDiff + p1ScoreDist, p2HandDiff + p2ScoreDist)
 
-
-
---if a player has less hand than the other player, they get a penalty
---even spread of fingers 
+chooseBestMove :: Game -> [((Int, Int), Game)]
+chooseBestMove game = 
+    let
+        currentPlayer = turn game 
+        allMoves = legalMoves game
+        gameLst = [fromJust (makeMove game move) | move <- allMoves]
+    in
+        [(scoreGame game, game) | game <- gameLst]
