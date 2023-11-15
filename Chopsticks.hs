@@ -2,7 +2,7 @@ import Data.Maybe
 import Data.List
 
 type Hand = Int
-type Winner = Player
+data Result = Winner Player | Tie
 
 data Game = Game { 
     playerOne :: [Hand],
@@ -181,14 +181,14 @@ updateSide game PlayerTwo hand = Just $ game {playerTwo = hand, turn = opponent 
 
 --GameState Functions
 
-getWinner :: Game -> Maybe Winner
-getWinner game = 
-    if null $ playerOne game 
-        then Just PlayerTwo
-    else if null $ playerTwo game 
-        then Just PlayerOne
-    else Nothing
+getResult :: Game -> Maybe Result
+getResult game 
+    | (turnCount game) == 0 = Just Tie
+    | null $ (playerOne game) = Just (Winner PlayerTwo)
+    | null $ (playerTwo game) = Just (Winner PlayerOne)
+    
 
+    
 legalMoves :: Game -> [Move]
 legalMoves game = 
     if ((sum pHand) `mod` (length pHand) == 0)
@@ -219,5 +219,3 @@ showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------
           turnName :: String
           turnName = if ((turn game) == PlayerOne) then p1Name game else p2Name game
 
-prettyShowGame :: Game -> String
-prettyShowGame game = undefined
