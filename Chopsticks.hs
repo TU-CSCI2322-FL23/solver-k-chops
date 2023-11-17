@@ -1,5 +1,6 @@
 import Data.Maybe
 import Data.List
+import Data.List.Split
 
 type Hand = Int
 type Winner = Player
@@ -221,3 +222,15 @@ showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------
 
 prettyShowGame :: Game -> String
 prettyShowGame game = undefined
+
+readGame :: String ->  Game
+readGame str = Game {playerOne = hand1, playerTwo = hand2, p1Name = name1, p2Name = name2, turn = t, turnCount = count}
+  where
+    keyValues = map (break (== ':')) $ splitOn ";" str
+
+    name1 = tail $ snd $ keyValues !! 0
+    name2 = tail $ snd $ keyValues !! 1
+    hand1 = map read (splitOn "," (drop 2 $ init (snd $ keyValues !! 2)))
+    hand2 = map read (splitOn "," (drop 2 $ init (snd $ keyValues !! 3)))
+    t = if (tail $ snd $ keyValues !! 4) == "PlayerOne" then PlayerOne else PlayerTwo
+    count = read $ tail $ snd $ keyValues !! 5
