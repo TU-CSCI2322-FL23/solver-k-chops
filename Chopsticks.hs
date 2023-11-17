@@ -6,7 +6,7 @@ import Data.List.Split
 type Hand = Int
 data Result = Winner Player | Tie
 
-data Game = Game { 
+data Game = Game {
     playerOne :: [Hand],
     playerTwo :: [Hand],
     p1Name :: String,
@@ -19,9 +19,9 @@ data Player = PlayerOne | PlayerTwo deriving (Show, Eq)
 
 data Move = Add Int Int | Split deriving (Show, Eq)
 
-initializeGame :: String -> String -> Int -> Game 
-initializeGame playerOneName playerTwoName kHands = 
-    let 
+initializeGame :: String -> String -> Int -> Game
+initializeGame playerOneName playerTwoName kHands =
+    let
         hands = replicate kHands 1
     in
         Game {
@@ -69,7 +69,7 @@ handAsciiArt 4 = "---'____) \n" ++
               "      _________) \n" ++
               "      ___________) \n" ++
               "      _________) \n" ++
-              "---.________) \n"        
+              "---.________) \n"
 
 -- showHand :: Game -> Player -> Int -> String 
 -- showHand game player handIndex
@@ -101,7 +101,7 @@ askMove = do
     case option of
         -- "1" -> return Add  --this needs to be adjusted to account for updated Add type
         "2" -> return Split
-        _ -> do 
+        _ -> do
                 putStrLn "Wrong input"
                 askMove --ask Dr. Fogarty if I can also print something along with doing askMove
 --askMove either returns Add or Move depending on player input
@@ -114,10 +114,10 @@ chooseHand :: IO (Int,Int)
 chooseHand = do
     putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
     output <- getLine
-    let outputList = words output 
+    let outputList = words output
     case outputList of
         [a,b] -> return (read a, read b) --unsafe. If a and b aren't numbers, then it'll error
-        _ -> do 
+        _ -> do
                 putStrLn "Wrong input"
                 chooseHand
 
@@ -128,11 +128,11 @@ chooseHand = do
 --make a new list every time the hand is updated
 
 makeMove :: Game -> Move -> Maybe Game
-makeMove game move = 
+makeMove game move =
     if (move `elem` (legalMoves game))
         then let (attackerHands, defenderHands) = handsFor game
-             in case move of 
-                 (Add aHand dHand) -> 
+             in case move of
+                 (Add aHand dHand) ->
                      do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
                          updateSide game (opponent $ turn game) updateDefenderHand
                  Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
@@ -142,13 +142,13 @@ makeMove game move =
     else Nothing
 
 handsFor :: Game -> ([Hand], [Hand])
-handsFor game = 
-    case turn game of 
+handsFor game =
+    case turn game of
         PlayerOne -> (playerOne game, playerTwo game)
-        PlayerTwo -> (playerTwo game, playerOne game) 
+        PlayerTwo -> (playerTwo game, playerOne game)
 
 addHands :: [Hand] -> [Hand] -> Int -> Int -> Maybe [Hand]
-addHands attackerHands defenderHands aHand dHand = 
+addHands attackerHands defenderHands aHand dHand =
     do  attackerHand <- getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
         defenderHand <- getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
         sumFingers <- Just $ attackerHand + defenderHand --add attacker hand too defender hand
@@ -156,8 +156,8 @@ addHands attackerHands defenderHands aHand dHand =
         updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save at correct index
     where getHand :: [Hand] -> Int -> Maybe Hand
           getHand [] index = Nothing
-          getHand [x] index = 
-            if index == 0 
+          getHand [x] index =
+            if index == 0
                 then Just x
             else Nothing
           getHand (x:xs) index =
@@ -168,7 +168,7 @@ addHands attackerHands defenderHands aHand dHand =
           --Ex: getHand playerOne game 5 (where playerOne Hands are [2,1,3,5,4]) = 4
 
           updateHand :: [Hand] -> Int -> Int -> Maybe [Hand]
-          updateHand [] index newValue = Nothing 
+          updateHand [] index newValue = Nothing
           updateHand (x:xs) 0 0 = Just xs
           updateHand (x:xs) 0 newValue = Just $ newValue:xs
           updateHand (x:xs) index newValue = consMaybeList x (updateHand xs (index - 1) newValue)
@@ -184,22 +184,22 @@ updateSide game PlayerTwo hand = Just $ game {playerTwo = hand, turn = opponent 
 --GameState Functions
 
 getResult :: Game -> Maybe Result
-getResult game 
+getResult game
     | (turnCount game) == 0 = Just Tie
     | null $ (playerOne game) = Just (Winner PlayerTwo)
     | null $ (playerTwo game) = Just (Winner PlayerOne)
     | otherwise = Nothing
-    
+
 
 
 legalMoves :: Game -> [Move]
-legalMoves game = 
+legalMoves game =
     if ((sum pHand) `mod` (length pHand) == 0)
         then Split : allAdds
     else allAdds
     where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
           allAdds :: [Move]
-          allAdds = 
+          allAdds =
             let numP1Hands = length $ playerOne game
                 numP2Hands = length $ playerTwo game
                 p1Indices = [0..numP1Hands-1]
@@ -226,7 +226,7 @@ prettyShowGame :: Game -> String
 prettyShowGame game = undefined
 
 describeGame :: Game -> String
-describeGame game = 
+describeGame game =
     "Player1:" ++ (p1Name game) ++ "," ++ "Player2:" ++ (p2Name game) ++ "," ++ "P1Hands:" ++ (show (playerOne game)) ++ "," ++ "P2Hands:" ++ (show (playerTwo game)) ++ "," ++ "CurrentTurn:" ++ (show (turn game)) ++ "," ++ "TurnCount:" ++ (show (turnCount game))
 --Describe Game takes a game and provides a string that describes the game fully and is reversible to create a game if needed
 --Ex: describeGame game = "Player1:Ashwin,Player2:DickMan,P1Hands:[1,1,1,1],P2Hands:[1,1,1,1],CurrentTurn:PlayerOne,TurnCount:50"    
@@ -239,26 +239,32 @@ describeGame game =
 
 
 
+-- writeGame :: Game -> FilePath -> IO ()
 
+-- loadGame :: FilePath -> IO Game 
 
+-- putBestMove :: Game -> IO () that computes the best move and prints it to standard output. For full credit, also print the outcome that moves forces.
 
+-- main :: IO (), which reads a file name from standard input or the arguments, loads the game, and prints the best move.
 
-
-
-
-
-
-
-
-
-
+-- Estimate: 3, requires stories 4. 5. 6. and 7.
 
 
 
 writeGame :: Game -> IO ()
-writeGame game = 
-    let 
+writeGame game =
+    let
         gameString = describeGame game
     in
         writeFile "Game_Log" gameString
 
+loadGame :: FilePath -> IO Game
+loadGame filePath = do something
+
+putBestMove :: Game -> IO ()
+putBestMove game = showGame game >>= print
+
+main :: IO ()
+main =  do x <- getLine
+           game <- loadGame x
+           putBestMove game
