@@ -1,8 +1,10 @@
+module Chopsticks where
 import Data.Maybe
 import Data.List
+import Data.List.Split
 
 type Hand = Int
-type Winner = Player
+data Result = Winner Player | Tie deriving (Show, Eq)
 
 data Game = Game { 
     playerOne :: [Hand],
@@ -181,13 +183,14 @@ updateSide game PlayerTwo hand = Just $ game {playerTwo = hand, turn = opponent 
 
 --GameState Functions
 
-getWinner :: Game -> Maybe Winner
-getWinner game = 
-    if null $ playerOne game 
-        then Just PlayerTwo
-    else if null $ playerTwo game 
-        then Just PlayerOne
-    else Nothing
+getResult :: Game -> Maybe Result
+getResult game 
+    | (turnCount game) == 0 = Just Tie
+    | null $ (playerOne game) = Just (Winner PlayerTwo)
+    | null $ (playerTwo game) = Just (Winner PlayerOne)
+    | otherwise = Nothing
+    
+
 
 legalMoves :: Game -> [Move]
 legalMoves game = 
@@ -222,52 +225,79 @@ showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------
 prettyShowGame :: Game -> String
 prettyShowGame game = undefined
 
+describeGame :: Game -> String
+describeGame game = 
+    "Player1:" ++ (p1Name game) ++ "," ++ "Player2:" ++ (p2Name game) ++ "," ++ "P1Hands:" ++ (show (playerOne game)) ++ "," ++ "P2Hands:" ++ (show (playerTwo game)) ++ "," ++ "CurrentTurn:" ++ (show (turn game)) ++ "," ++ "TurnCount:" ++ (show (turnCount game))
+--Describe Game takes a game and provides a string that describes the game fully and is reversible to create a game if needed
+--Ex: describeGame game = "Player1:Ashwin,Player2:DickMan,P1Hands:[1,1,1,1],P2Hands:[1,1,1,1],CurrentTurn:PlayerOne,TurnCount:50"    
 
 
+-- isFutureWinner :: Game -> Maybe Result
+-- isFutureWinner game =
+--     case (getResult game) of
+--         Just result -> Just result
+--         Nothing ->
+--                 if (turnCount game) == 0
+--                     then
+--                         Just Tie
+--                 else
+                     
+--                         if nextPlayer == turn game
+--                             then 
+--                                 if True `elem` (checkWinnerOutcome game recurResults)
+--                                     then Just (Winner (turn game))
+--                                 else 
+--                                     Nothing
+--                        else 
+--                             if True `elem` (checkWinnerOutcome game recurResults)
+--                                 then Just (Winner (turn game))
+--                         else Nothing
+--     where 
+--         checkWinnerOutcome game recurResults = map (\x -> x == Just (Winner (turn game))) recurResults
+
+gameOutcome :: Game -> [Game]
+gameOutcome game = 
+        let
+            allMoves = legalMoves game
+        in    
+            mapMaybe (\move -> makeMove game move) allMoves
+            
+
+whoWillWin :: [Game] -> Maybe Result
+whoWillWin [] = Nothing
+whoWillWin (game:xs) = 
+    if (turnCount game) == 0
+        then
+            Just Tie
+    else
+        case (getResult game) of
+            Just result -> Just result --this takes care of the case if player already one
+            Nothing ->
+                let 
+                    newGames = (gameOutcome game)
+                    recurResults = map (\x -> getResult x) newGames
+                    nextPlayer = opponent (turn game)
+                in 
+                if nextPlayer == (turn game)   --this takes care of situations where the player will win in one turn
+                    then 
+                        if True `elem` (checkWinnerOutcome game recurResults)
+                            then Just (Winner (turn game))
+                        else 
+                            whoWillWin (gameOutcome game)
+                else 
+                    if True `elem` (checkWinnerOutcome game recurResults) --I need help with this logic
+                        then Just (Winner (turn game))
+                    else whoWillWin (gameOutcome game)
+    where 
+        checkWinnerOutcome game recurResults = map (\x -> x == Just (Winner (turn game))) recurResults
+    -- let futureWinner = isFutureWinner x
+    -- in
+    -- case futureWinner of
+    --     Just result -> Just result
+    --     Nothing ->
+    --         let 
+    --             newGameState = gameOutcome (head xs)
+    --         in
+    --             (whoWillWin newGameState)
 
 
-
-
-
-
-
-
-
-
-
-
-handDiff :: [Hand] -> [Hand] -> Int
-handDiff playerA playerB = (length playerA) - (length playerB) 
---calculates the difference in hands between players. If the resulting Int is negative, than playerA has less hands than playerB. If resulting Int is positive, than playerA has more hands 
---Ex: handDiff (playerOne game) (playerTwo game) where playerOne has [2,3] and playerTwo has [4,5,6] = -1 
-
-scoreDist :: [Hand] ->  Int
-scoreDist player = 
-    let 
-        totalFingers = sum player
-        avgFingerPerHand = totalFingers `div` (length player)
-        dist = [x - avgFingerPerHand | x <- player]
-        scoredDist = map (* (-1)) dist --this basically says that every negative number is positive and every positive number is negative. This promotes players where their hands have less fingers than average. It'll mean players play more defensively 
-    in
-        sum scoredDist
-
-
-
-scoreGame :: Game -> (Int, Int)
-scoreGame game = 
-    let 
-        p1HandDiff = handDiff (playerOne game) (playerTwo game)
-        p2HandDiff = p1HandDiff * (-1)
-        p1ScoreDist = scoreDist (playerOne game)
-        p2ScoreDist = scoreDist (playerTwo game)
-    in
-        (p1HandDiff + p1ScoreDist, p2HandDiff + p2ScoreDist)
-
-chooseBestMove :: Game -> [((Int, Int), Game)]
-chooseBestMove game = 
-    let
-        currentPlayer = turn game 
-        allMoves = legalMoves game
-        gameLst = [fromJust (makeMove game move) | move <- allMoves]
-    in
-        [(scoreGame game, game) | game <- gameLst]
