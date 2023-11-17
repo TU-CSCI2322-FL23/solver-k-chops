@@ -232,3 +232,33 @@ describeGame game =
 --Ex: describeGame game = "Player1:Ashwin,Player2:DickMan,P1Hands:[1,1,1,1],P2Hands:[1,1,1,1],CurrentTurn:PlayerOne,TurnCount:50"    
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+writeGame :: Game -> IO ()
+writeGame game = 
+    let 
+        gameString = describeGame game
+    in
+        writeFile "Game_Log" gameString
+
