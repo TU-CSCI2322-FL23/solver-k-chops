@@ -273,7 +273,7 @@ whoWillWin game =
                 outcomes = map (whoWillWin) newGames
                 outcomesBools = map (\x -> x == Just (Winner (turn game))) outcomes 
             in
-                if True `elem` outcomeBools
+                if True `elem` outcomesBools
                     then (Winner (turn game))
                 else
                     
