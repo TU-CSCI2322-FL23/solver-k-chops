@@ -263,33 +263,22 @@ gameOutcome game =
             mapMaybe (\move -> makeMove game move) allMoves
             
 
-whoWillWin :: [Game] -> Maybe Result
-whoWillWin [] = Nothing
-whoWillWin (game:xs) = 
-    if (turnCount game) == 0
-        then
-            Just Tie
-    else
-        case (getResult game) of
-            Just result -> Just result --this takes care of the case if player already one
-            Nothing ->
-                let 
-                    newGames = (gameOutcome game)
-                    recurResults = map (\x -> getResult x) newGames
-                    nextPlayer = opponent (turn game)
-                in 
-                if nextPlayer == (turn game)   --this takes care of situations where the player will win in one turn
-                    then 
-                        if True `elem` (checkWinnerOutcome game recurResults)
-                            then Just (Winner (turn game))
-                        else 
-                            whoWillWin (gameOutcome game)
-                else 
-                    if True `elem` (checkWinnerOutcome game recurResults) --I need help with this logic
-                        then Just (Winner (turn game))
-                    else whoWillWin (gameOutcome game)
-    where 
-        checkWinnerOutcome game recurResults = map (\x -> x == Just (Winner (turn game))) recurResults
+whoWillWin :: Game ->  Result
+whoWillWin game = 
+    case (getResult game) of
+        Just result -> fromJust result --this takes care of the case if player already one
+        Nothing ->
+            let 
+                newGames = mapMaybe (makeMove game) (legalMoves game)
+                outcomes = map (whoWillWin) newGames
+                outcomesBools = map (\x -> x == Just (Winner (turn game))) outcomes 
+            in
+                if True `elem` outcomeBools
+                    then (Winner (turn game))
+                else
+                    
+            --check if opponent can force a win 
+
     -- let futureWinner = isFutureWinner x
     -- in
     -- case futureWinner of
