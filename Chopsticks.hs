@@ -12,7 +12,7 @@ data Game = Game {
     p2Name :: String,
     turn :: Player,
     turnCount :: Int
-} deriving (Show)
+} deriving (Show, Eq)
 
 data Player = PlayerOne | PlayerTwo deriving (Show, Eq)
 
@@ -223,14 +223,55 @@ showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------
 prettyShowGame :: Game -> String
 prettyShowGame game = undefined
 
-readGame :: String ->  Game
-readGame str = Game {playerOne = hand1, playerTwo = hand2, p1Name = name1, p2Name = name2, turn = t, turnCount = count}
-  where
-    keyValues = map (break (== ':')) $ splitOn ";" str
-
-    name1 = tail $ snd $ keyValues !! 0
-    name2 = tail $ snd $ keyValues !! 1
-    hand1 = map read (splitOn "," (drop 2 $ init (snd $ keyValues !! 2)))
-    hand2 = map read (splitOn "," (drop 2 $ init (snd $ keyValues !! 3)))
-    t = if (tail $ snd $ keyValues !! 4) == "PlayerOne" then PlayerOne else PlayerTwo
-    count = read $ tail $ snd $ keyValues !! 5
+readGame :: String -> Maybe Game
+readGame str = 
+    if ((length $ filter (== ':') str) == 6 && (length $ filter (== ';') str) == 5)
+        then readGameHelp 5 (map (break (== ':')) $ splitOn ";" str)
+    else Nothing
+    where readGameHelp :: Int -> [(String, String)] -> Maybe Game
+          readGameHelp 0 [(key, value)] = 
+            let count = read $ tail value  
+            in  if (count <= 50) 
+                    then Just Game {playerOne = [], playerTwo = [], p1Name = "", p2Name = "", turn = PlayerOne, turnCount = count}
+                else Nothing
+          readGameHelp 1 ((key, value):xs) = 
+            let game = readGameHelp 0 xs
+            in  if (game /= Nothing) 
+                    then let t = tail value
+                             g = fromJust game
+                         in  if (t == "PlayerOne") then Just g
+                             else if (t == "PlayerTwo") then Just $ g {turn = PlayerTwo} 
+                             else Nothing
+                else Nothing
+          readGameHelp 2 ((key, value):xs) = 
+            let game = readGameHelp 1 xs
+            in  if (game /= Nothing)
+                    then let handString = tail value
+                             contentsString = init $ tail handString
+                             hand = map read (splitOn "," contentsString)
+                             g = fromJust game
+                         in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
+                                then Just $ g {playerTwo = hand}
+                             else Nothing
+                else Nothing
+          readGameHelp 3 ((key, value):xs) = 
+            let game = readGameHelp 2 xs
+            in  if (game /= Nothing)
+                    then let handString = tail value
+                             contentsString = init $ tail handString
+                             hand = map read (splitOn "," contentsString)
+                             g = fromJust game
+                         in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
+                                then Just $ g {playerOne = hand}
+                             else Nothing
+                else Nothing
+          readGameHelp 4 ((key, value):xs) = 
+            let game = readGameHelp 3 xs
+            in  if (game /= Nothing)
+                    then let g = fromJust game in Just $ g {p2Name = tail value}
+                else Nothing
+          readGameHelp 5 ((key, value):xs) = 
+            let game = readGameHelp 4 xs
+            in  if (game /= Nothing)
+                    then let g = fromJust game in Just $ g {p1Name = tail value}                        
+                else Nothing
