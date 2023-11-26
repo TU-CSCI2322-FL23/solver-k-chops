@@ -1,9 +1,10 @@
+module Chopsticks where
 import Data.Maybe
 import Data.List
 import Data.List.Split
 
 type Hand = Int
-type Winner = Player
+data Result = Winner Player | Tie
 
 data Game = Game { 
     playerOne :: [Hand],
@@ -182,13 +183,14 @@ updateSide game PlayerTwo hand = Just $ game {playerTwo = hand, turn = opponent 
 
 --GameState Functions
 
-getWinner :: Game -> Maybe Winner
-getWinner game = 
-    if null $ playerOne game 
-        then Just PlayerTwo
-    else if null $ playerTwo game 
-        then Just PlayerOne
-    else Nothing
+getResult :: Game -> Maybe Result
+getResult game 
+    | (turnCount game) == 0 = Just Tie
+    | null $ (playerOne game) = Just (Winner PlayerTwo)
+    | null $ (playerTwo game) = Just (Winner PlayerOne)
+    | otherwise = Nothing
+    
+
 
 legalMoves :: Game -> [Move]
 legalMoves game = 
@@ -275,3 +277,9 @@ readGame str =
             in  if (game /= Nothing)
                     then let g = fromJust game in Just $ g {p1Name = tail value}                        
                 else Nothing
+
+describeGame :: Game -> String
+describeGame game = 
+    "Player1:" ++ (p1Name game) ++ ";" ++ "Player2:" ++ (p2Name game) ++ ";" ++ "P1Hands:" ++ (show (playerOne game)) ++ ";" ++ "P2Hands:" ++ (show (playerTwo game)) ++ ";" ++ "CurrentTurn:" ++ (show (turn game)) ++ ";" ++ "TurnCount:" ++ (show (turnCount game))
+--Describe Game takes a game and provides a string that describes the game fully and is reversible to create a game if needed
+--Ex: describeGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"    
