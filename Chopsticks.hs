@@ -213,17 +213,14 @@ opponent :: Player -> Player
 opponent PlayerOne = PlayerTwo
 opponent PlayerTwo = PlayerOne
 
-showGame :: Game -> IO ()
-showGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------- \n" ++ (p2Name game) ++ " -> " ++ hand2 ++ "\n" ++ turnName ++ "'s turn! " ++ (show $ turnCount game) ++ " turns left!")
+prettyShowGame :: Game -> IO ()
+prettyShowGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------------- \n" ++ (p2Name game) ++ " -> " ++ hand2 ++ "\n" ++ turnName ++ "'s turn! " ++ (show $ turnCount game) ++ " turns left!")
     where hand1 :: String
           hand1 = intercalate " " (map show (playerOne game))
           hand2 :: String
           hand2 = intercalate " " (map show (playerTwo game))
           turnName :: String
           turnName = if ((turn game) == PlayerOne) then p1Name game else p2Name game
-
-prettyShowGame :: Game -> String
-prettyShowGame game = undefined
 
 readGame :: String -> Maybe Game
 readGame str = 
@@ -278,8 +275,8 @@ readGame str =
                     then let g = fromJust game in Just $ g {p1Name = tail value}                        
                 else Nothing
 
-describeGame :: Game -> String
-describeGame game = 
+showGame :: Game -> String
+showGame game = 
     "Player1:" ++ (p1Name game) ++ ";" ++ "Player2:" ++ (p2Name game) ++ ";" ++ "P1Hands:" ++ (show (playerOne game)) ++ ";" ++ "P2Hands:" ++ (show (playerTwo game)) ++ ";" ++ "CurrentTurn:" ++ (show (turn game)) ++ ";" ++ "TurnCount:" ++ (show (turnCount game))
---Describe Game takes a game and provides a string that describes the game fully and is reversible to create a game if needed
---Ex: describeGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"    
+--showGame takes a game and provides a string that describes the game fully and is reversible to create a game if needed
+--Ex: showGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"    
