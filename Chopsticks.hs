@@ -194,20 +194,24 @@ getResult game
 
 legalMoves :: Game -> [Move]
 legalMoves game = 
-    if ((sum pHand) `mod` (length pHand) == 0)
-        then Split : allAdds
-    else allAdds
-    where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
-          allAdds :: [Move]
-          allAdds = 
-            let numP1Hands = length $ playerOne game
-                numP2Hands = length $ playerTwo game
-                p1Indices = [0..numP1Hands-1]
-                p2Indices = [0..numP2Hands-1]
-                crossProd = [(x, y) | x <- p1Indices, y <- p2Indices]
-            in [Add (fst prod) (snd prod)| prod <- crossProd]
--- splitting is legal when the number of fingers can be divided evenly among the remaining hands
+    case (getResult game) of
+        Just result -> []
+        Nothing -> 
+            if (((sum pHand) `mod` (length pHand) == 0) && (not $ all (\h -> h == ((sum pHand) `div` (length pHand))) pHand))
+                then Split : allAdds
+            else allAdds
+            where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
+                  allAdds :: [Move]
+                  allAdds = 
+                    let numP1Hands = length $ playerOne game
+                        numP2Hands = length $ playerTwo game
+                        p1Indices = [0..numP1Hands-1]
+                        p2Indices = [0..numP2Hands-1]
+                        crossProd = [(x, y) | x <- p1Indices, y <- p2Indices]
+                    in [Add (fst prod) (snd prod)| prod <- crossProd]
+-- splitting is legal when the number of fingers can be divided evenly among the current player's remaining hands, as long as doing so would actually modify their hands
 -- an Add move is legal if both Ints provided are valid indices into the two players' hands; any existing hand can attack any existing hand of its opponent
+-- returns an empty list if the game has ended
 
 opponent :: Player -> Player
 opponent PlayerOne = PlayerTwo
