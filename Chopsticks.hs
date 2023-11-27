@@ -271,7 +271,7 @@ gameMovePair game move =
 bestMove :: Game -> Maybe Move
 bestMove game =
         case getResult game of
-        Just result -> Nothing -- Game is already over, no move possible
+        Just result -> Nothing 
         Nothing -> 
             let
                 allMoves = legalMoves game
@@ -283,8 +283,8 @@ bestMove game =
                     _ -> False ) outcomes
             in
                 case filteredOutcome of
-                ((mv, _):_) -> Just mv -- Return the first move that leads to a win or a tie
-                _ -> Nothing -- No winning or tying move found
+                ((mv, _):_) -> Just mv 
+                _ -> Nothing 
 
 
 
