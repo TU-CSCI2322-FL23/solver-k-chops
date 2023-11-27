@@ -209,8 +209,11 @@ legalMoves game =
                         numP2Hands = length $ playerTwo game
                         p1Indices = [0..numP1Hands-1]
                         p2Indices = [0..numP2Hands-1]
-                        crossProd = [(x, y) | x <- p1Indices, y <- p2Indices]
-                    in [Add (fst prod) (snd prod)| prod <- crossProd]
+                        crossProd = 
+                            case (turn game) of 
+                                PlayerOne -> [(x, y) | x <- p1Indices, y <- p2Indices]
+                                PlayerTwo -> [(x, y) | x <- p2Indices, y <- p1Indices]
+                    in [Add x y | (x, y) <- crossProd]
 -- splitting is legal when the number of fingers can be divided evenly among the current player's remaining hands, as long as doing so would actually modify their hands
 -- an Add move is legal if both Ints provided are valid indices into the two players' hands; any existing hand can attack any existing hand of its opponent
 -- returns an empty list if the game has ended
@@ -254,7 +257,7 @@ readGame str =
                     Nothing -> Nothing
                     Just g -> let handString = tail value
                                   contentsString = init $ tail handString
-                                  hand = map read (splitOn "," contentsString)
+                                  hand = if (contentsString == "") then [] else map read (splitOn "," contentsString)
                               in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
                                       then Just $ g {playerTwo = hand}
                                   else Nothing
@@ -264,7 +267,7 @@ readGame str =
                     Nothing -> Nothing
                     Just g -> let handString = tail value
                                   contentsString = init $ tail handString
-                                  hand = map read (splitOn "," contentsString)
+                                  hand = if (contentsString == "") then [] else map read (splitOn "," contentsString)
                               in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
                                       then Just $ g {playerOne = hand}
                                   else Nothing
