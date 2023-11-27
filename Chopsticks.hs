@@ -195,7 +195,7 @@ getResult game
 legalMoves :: Game -> [Move]
 legalMoves game = 
     if ((sum pHand) `mod` (length pHand) == 0)
-        then Split : allAdds
+        then allAdds ++ [Split]  
     else allAdds
     where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
           allAdds :: [Move]
@@ -232,28 +232,6 @@ describeGame game =
 --Ex: describeGame game = "Player1:Ashwin,Player2:DickMan,P1Hands:[1,1,1,1],P2Hands:[1,1,1,1],CurrentTurn:PlayerOne,TurnCount:50"    
 
 
--- isFutureWinner :: Game -> Maybe Result
--- isFutureWinner game =
---     case (getResult game) of
---         Just result -> Just result
---         Nothing ->
---                 if (turnCount game) == 0
---                     then
---                         Just Tie
---                 else
-                     
---                         if nextPlayer == turn game
---                             then 
---                                 if True `elem` (checkWinnerOutcome game recurResults)
---                                     then Just (Winner (turn game))
---                                 else 
---                                     Nothing
---                        else 
---                             if True `elem` (checkWinnerOutcome game recurResults)
---                                 then Just (Winner (turn game))
---                         else Nothing
---     where 
---         checkWinnerOutcome game recurResults = map (\x -> x == Just (Winner (turn game))) recurResults
 
 gameOutcome :: Game -> [Game]
 gameOutcome game = 
@@ -266,27 +244,47 @@ gameOutcome game =
 whoWillWin :: Game ->  Result
 whoWillWin game = 
     case (getResult game) of
-        Just result -> fromJust result --this takes care of the case if player already one
+        Just result -> result --this takes care of the case if player already won
         Nothing ->
             let 
                 newGames = mapMaybe (makeMove game) (legalMoves game)
                 outcomes = map (whoWillWin) newGames
-                outcomesBools = map (\x -> x == Just (Winner (turn game))) outcomes 
             in
-                if True `elem` outcomesBools
-                    then (Winner (turn game))
+                if any (== Winner (turn game)) outcomes --found link to https://zvon.org/other/haskell/Outputprelude/any_f.html 
+                    then
+                        Winner (turn game)
                 else
-                    
-            --check if opponent can force a win 
+                    if any (== Winner (opponent (turn game))) outcomes
+                        then
+                            Winner (opponent (turn game))
+                    else
+                        Tie
 
-    -- let futureWinner = isFutureWinner x
-    -- in
-    -- case futureWinner of
-    --     Just result -> Just result
-    --     Nothing ->
-    --         let 
-    --             newGameState = gameOutcome (head xs)
-    --         in
-    --             (whoWillWin newGameState)
+gameMovePair :: Game -> Move -> Maybe (Move, Game)
+gameMovePair game move = 
+    case makeMove game move of
+        Just resultGame -> Just (move, resultGame)
+        Nothing -> Nothing
+
+
+
+bestMove :: Game -> Maybe Move
+bestMove game =
+        case getResult game of
+        Just result -> Nothing -- Game is already over, no move possible
+        Nothing -> 
+            let
+                allMoves = legalMoves game
+                newGames = mapMaybe (gameMovePair game) allMoves
+                outcomes = map (\(move, game) -> (move, whoWillWin game)) newGames
+                filteredOutcome = filter (\(move, result) -> case result of 
+                    Winner player -> player == (turn game) 
+                    Tie -> True 
+                    _ -> False ) outcomes
+            in
+                case filteredOutcome of
+                ((mv, _):_) -> Just mv -- Return the first move that leads to a win or a tie
+                _ -> Nothing -- No winning or tying move found
+
 
 
