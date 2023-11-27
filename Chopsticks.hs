@@ -336,25 +336,7 @@ bestMove game =
                 case filteredOutcome of
                 ((mv, _):_) -> Just mv 
                 _ -> Nothing 
-
-
-
-
-
-
-
--- writeGame :: Game -> FilePath -> IO ()
-
--- loadGame :: FilePath -> IO Game 
-
--- putBestMove :: Game -> IO () that computes the best move and prints it to standard output. For full credit, also print the outcome that moves forces.
-
--- main :: IO (), which reads a file name from standard input or the arguments, loads the game, and prints the best move.
-
--- Estimate: 3, requires stories 4. 5. 6. and 7.
-
-
-
+                
 writeGame :: Game -> FilePath -> IO ()
 writeGame game fileName =
     let
