@@ -242,45 +242,42 @@ readGame str =
                 else Nothing
           readGameHelp 1 ((key, value):xs) = 
             let game = readGameHelp 0 xs
-            in  if (game /= Nothing) 
-                    then let t = tail value
-                             g = fromJust game
-                         in  if (t == "PlayerOne") then Just g
-                             else if (t == "PlayerTwo") then Just $ g {turn = PlayerTwo} 
-                             else Nothing
-                else Nothing
+            in  case game of
+                    Nothing -> Nothing
+                    Just g -> let t = tail value
+                              in  if (t == "PlayerOne") then Just g
+                                  else if (t == "PlayerTwo") then Just $ g {turn = PlayerTwo} 
+                                  else Nothing
           readGameHelp 2 ((key, value):xs) = 
             let game = readGameHelp 1 xs
-            in  if (game /= Nothing)
-                    then let handString = tail value
-                             contentsString = init $ tail handString
-                             hand = map read (splitOn "," contentsString)
-                             g = fromJust game
-                         in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
-                                then Just $ g {playerTwo = hand}
-                             else Nothing
-                else Nothing
+            in  case game of
+                    Nothing -> Nothing
+                    Just g -> let handString = tail value
+                                  contentsString = init $ tail handString
+                                  hand = map read (splitOn "," contentsString)
+                              in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
+                                      then Just $ g {playerTwo = hand}
+                                  else Nothing
           readGameHelp 3 ((key, value):xs) = 
             let game = readGameHelp 2 xs
-            in  if (game /= Nothing)
-                    then let handString = tail value
-                             contentsString = init $ tail handString
-                             hand = map read (splitOn "," contentsString)
-                             g = fromJust game
-                         in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
-                                then Just $ g {playerOne = hand}
-                             else Nothing
-                else Nothing
+            in  case game of 
+                    Nothing -> Nothing
+                    Just g -> let handString = tail value
+                                  contentsString = init $ tail handString
+                                  hand = map read (splitOn "," contentsString)
+                              in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
+                                      then Just $ g {playerOne = hand}
+                                  else Nothing
           readGameHelp 4 ((key, value):xs) = 
             let game = readGameHelp 3 xs
-            in  if (game /= Nothing)
-                    then let g = fromJust game in Just $ g {p2Name = tail value}
-                else Nothing
+            in  case game of
+                    Nothing -> Nothing
+                    Just g -> Just $ g {p2Name = tail value}
           readGameHelp 5 ((key, value):xs) = 
             let game = readGameHelp 4 xs
-            in  if (game /= Nothing)
-                    then let g = fromJust game in Just $ g {p1Name = tail value}                        
-                else Nothing
+            in  case game of
+                    Nothing -> Nothing
+                    Just g -> Just $ g {p1Name = tail value}                        
 
 showGame :: Game -> String
 showGame game = 
