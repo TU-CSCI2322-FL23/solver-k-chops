@@ -4,7 +4,9 @@ import Data.List
 import Data.List.Split
 
 type Hand = Int
-data Result = Winner Player | Tie
+
+data Result = Winner Player | Tie deriving (Show, Eq)
+
 
 data Game = Game { 
     playerOne :: [Hand],
@@ -226,6 +228,7 @@ prettyShowGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------
           turnName :: String
           turnName = if ((turn game) == PlayerOne) then p1Name game else p2Name game
 
+
 readGame :: String -> Maybe Game
 readGame str = 
     if ((length $ filter (== ':') str) == 6 && (length $ filter (== ';') str) == 5)
@@ -283,4 +286,80 @@ showGame :: Game -> String
 showGame game = 
     "Player1:" ++ (p1Name game) ++ ";" ++ "Player2:" ++ (p2Name game) ++ ";" ++ "P1Hands:" ++ (show (playerOne game)) ++ ";" ++ "P2Hands:" ++ (show (playerTwo game)) ++ ";" ++ "CurrentTurn:" ++ (show (turn game)) ++ ";" ++ "TurnCount:" ++ (show (turnCount game))
 --showGame takes a game and provides a string that describes the game fully and is reversible to create a game if needed
---Ex: showGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"    
+--Ex: showGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"
+
+gameOutcome :: Game -> [Game]
+gameOutcome game = 
+        let
+            allMoves = legalMoves game
+        in    
+            mapMaybe (\move -> makeMove game move) allMoves
+            
+
+whoWillWin :: Game ->  Result
+whoWillWin game = 
+    case (getResult game) of
+        Just result -> result --this takes care of the case if player already won
+        Nothing ->
+            let 
+                newGames = mapMaybe (makeMove game) (legalMoves game)
+                outcomes = map (whoWillWin) newGames
+            in
+                if any (== Winner (turn game)) outcomes --found link to https://zvon.org/other/haskell/Outputprelude/any_f.html 
+                    then
+                        Winner (turn game)
+                else
+                    if any (== Winner (opponent (turn game))) outcomes
+                        then
+                            Winner (opponent (turn game))
+                    else
+                        Tie
+
+gameMovePair :: Game -> Move -> Maybe (Move, Game)
+gameMovePair game move = 
+    case makeMove game move of
+        Just resultGame -> Just (move, resultGame)
+        Nothing -> Nothing
+
+
+
+bestMove :: Game -> Maybe Move
+bestMove game =
+        case getResult game of
+        Just result -> Nothing 
+        Nothing -> 
+            let
+                allMoves = legalMoves game
+                newGames = mapMaybe (gameMovePair game) allMoves
+                outcomes = map (\(move, game) -> (move, whoWillWin game)) newGames
+                filteredOutcome = filter (\(move, result) -> case result of 
+                    Winner player -> player == (turn game) 
+                    Tie -> True 
+                    _ -> False ) outcomes
+            in
+                case filteredOutcome of
+                ((mv, _):_) -> Just mv 
+                _ -> Nothing 
+                
+writeGame :: Game -> FilePath -> IO ()
+writeGame game fileName =
+    let
+        gameString = showGame game
+    in
+        writeFile fileName gameString
+
+loadGame :: FilePath -> IO Game
+loadGame fileName = 
+    do
+        gameString <- readFile fileName
+        return (fromJust (readGame gameString)) 
+
+putBestMove :: Game -> IO ()
+putBestMove game = 
+    do
+        putStrLn (show(bestMove game))
+
+-- main :: IO ()
+-- main =  do x <- getLine
+--            game <- loadGame x
+--            putBestMove game
