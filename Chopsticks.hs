@@ -336,3 +336,26 @@ bestMove game =
                 case filteredOutcome of
                 ((mv, _):_) -> Just mv 
                 _ -> Nothing 
+                
+writeGame :: Game -> FilePath -> IO ()
+writeGame game fileName =
+    let
+        gameString = showGame game
+    in
+        writeFile fileName gameString
+
+loadGame :: FilePath -> IO Game
+loadGame fileName = 
+    do
+        gameString <- readFile fileName
+        return (fromJust (readGame gameString)) 
+
+putBestMove :: Game -> IO ()
+putBestMove game = 
+    do
+        putStrLn (show(bestMove game))
+
+-- main :: IO ()
+-- main =  do x <- getLine
+--            game <- loadGame x
+--            putBestMove game
