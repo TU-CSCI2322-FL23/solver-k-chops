@@ -36,92 +36,92 @@ initializeGame playerOneName playerTwoName kHands =
         }
 
 
---Pretty Print Helper Functions
+-- --Pretty Print Helper Functions
 
-handAsciiArt :: Int -> String
-handAsciiArt 0 = "---'____) \n" ++
-              "      (_____) \n" ++
-              "      (_____) \n" ++
-              "      (____) \n" ++
-              "---.__(___) \n"
-
-
-handAsciiArt 1 = "---'____) \n" ++
-              "      _________) \n" ++
-              "      (_____) \n" ++
-              "      (____) \n" ++
-              "---.__(___) \n"
+-- handAsciiArt :: Int -> String
+-- handAsciiArt 0 = "---'____) \n" ++
+--               "      (_____) \n" ++
+--               "      (_____) \n" ++
+--               "      (____) \n" ++
+--               "---.__(___) \n"
 
 
-handAsciiArt 2 = "---'____) \n" ++
-              "      _________) \n" ++
-              "      ___________) \n" ++
-              "      (____) \n" ++
-              "---.(_____) \n"
+-- handAsciiArt 1 = "---'____) \n" ++
+--               "      _________) \n" ++
+--               "      (_____) \n" ++
+--               "      (____) \n" ++
+--               "---.__(___) \n"
 
 
-handAsciiArt 3 ="---'____) \n" ++
-              "      _________) \n" ++
-              "      ___________) \n" ++
-              "      _________) \n" ++
-              "---.(_____) \n"
+-- handAsciiArt 2 = "---'____) \n" ++
+--               "      _________) \n" ++
+--               "      ___________) \n" ++
+--               "      (____) \n" ++
+--               "---.(_____) \n"
 
 
-handAsciiArt 4 = "---'____) \n" ++
-              "      _________) \n" ++
-              "      ___________) \n" ++
-              "      _________) \n" ++
-              "---.________) \n"        
-
--- showHand :: Game -> Player -> Int -> String 
--- showHand game player handIndex
---     |currentHand == 0 =  handAsciiArt 0
---     |currentHand == 1 =  handAsciiArt 1
---     |currentHand == 2 =  handAsciiArt 2
---     |currentHand == 3 =  handAsciiArt 3
---     |currentHand == 4 =  handAsciiArt 4
---     where
---         playerHand = case player of
---             PlayerOne -> playerOne game
---             PlayerTwo -> playerTwo game
---         currentHand = getHand playerHand handIndex
-
---showHand takes a player and their hand index and returns ascii art for it
---Ex: showHand PlayerOne 2 where playerOne's hands are [1,2,3,4,0] ==  "---'____) \n" ++
---                                                                        "      _________) \n" ++
---                                                                        "      ___________) \n" ++
---                                                                        "      (____) \n" ++
---                                                                        "---.(_____)
+-- handAsciiArt 3 ="---'____) \n" ++
+--               "      _________) \n" ++
+--               "      ___________) \n" ++
+--               "      _________) \n" ++
+--               "---.(_____) \n"
 
 
---IO Functions
+-- handAsciiArt 4 = "---'____) \n" ++
+--               "      _________) \n" ++
+--               "      ___________) \n" ++
+--               "      _________) \n" ++
+--               "---.________) \n"        
 
-askMove :: IO Move
-askMove = do
-    putStrLn "Would you like to Add (1) or Split (2)?"
-    option <- getLine
-    case option of
-        -- "1" -> return Add  --this needs to be adjusted to account for updated Add type
-        "2" -> return Split
-        _ -> do 
-                putStrLn "Wrong input"
-                askMove --ask Dr. Fogarty if I can also print something along with doing askMove
---askMove either returns Add or Move depending on player input
---Ex: move <- askMove would make move = Add or Split depending on what the player put
+-- -- showHand :: Game -> Player -> Int -> String 
+-- -- showHand game player handIndex
+-- --     |currentHand == 0 =  handAsciiArt 0
+-- --     |currentHand == 1 =  handAsciiArt 1
+-- --     |currentHand == 2 =  handAsciiArt 2
+-- --     |currentHand == 3 =  handAsciiArt 3
+-- --     |currentHand == 4 =  handAsciiArt 4
+-- --     where
+-- --         playerHand = case player of
+-- --             PlayerOne -> playerOne game
+-- --             PlayerTwo -> playerTwo game
+-- --         currentHand = getHand playerHand handIndex
 
---used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
+-- --showHand takes a player and their hand index and returns ascii art for it
+-- --Ex: showHand PlayerOne 2 where playerOne's hands are [1,2,3,4,0] ==  "---'____) \n" ++
+-- --                                                                        "      _________) \n" ++
+-- --                                                                        "      ___________) \n" ++
+-- --                                                                        "      (____) \n" ++
+-- --                                                                        "---.(_____)
 
 
-chooseHand :: IO (Int,Int)
-chooseHand = do
-    putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
-    output <- getLine
-    let outputList = words output 
-    case outputList of
-        [a,b] -> return (read a, read b) --unsafe. If a and b aren't numbers, then it'll error
-        _ -> do 
-                putStrLn "Wrong input"
-                chooseHand
+-- -- Old IO Functions
+
+-- askMove :: IO Move
+-- askMove = do
+--     putStrLn "Would you like to Add (1) or Split (2)?"
+--     option <- getLine
+--     case option of
+--         -- "1" -> return Add  --this needs to be adjusted to account for updated Add type
+--         "2" -> return Split
+--         _ -> do 
+--                 putStrLn "Wrong input"
+--                 askMove --ask Dr. Fogarty if I can also print something along with doing askMove
+-- --askMove either returns Add or Move depending on player input
+-- --Ex: move <- askMove would make move = Add or Split depending on what the player put
+
+-- --used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
+
+
+-- chooseHand :: IO (Int,Int)
+-- chooseHand = do
+--     putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
+--     output <- getLine
+--     let outputList = words output 
+--     case outputList of
+--         [a,b] -> return (read a, read b) --unsafe. If a and b aren't numbers, then it'll error
+--         _ -> do 
+--                 putStrLn "Wrong input"
+--                 chooseHand
 
 
 --Move-Making Functions
