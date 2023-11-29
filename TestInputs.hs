@@ -1,5 +1,10 @@
 import Chopsticks
 
+--g = game
+--s = showGame str of g
+--(x) = number of moves til end
+--c = complex case, not 4s to 1s or 3s to 2s
+
 -- finished game
 g0 = Game {playerOne = [1], playerTwo = [], p1Name = "Josh", p2Name = "Ashwin", turn = PlayerTwo, turnCount = 25}
 s0 = "Player1:Josh;Player2:Ashwin;P1Hands:[1];P2Hands:[];CurrentTurn:PlayerTwo;TurnCount:25"
@@ -40,10 +45,47 @@ s2 = "Player1:James;Player2:Josh;P1Hands:[3];P2Hands:[2,2,2];CurrentTurn:PlayerO
 g4 = Game {playerOne = [4,4,4], playerTwo = [1,1], p1Name = "Henry", p2Name = "Ashwin", turn = PlayerTwo, turnCount = 43}
 s4 = "Player1:Henry;Player2:Ashwin;P1Hands:[4,4,4];P2Hands:[1,1];CurrentTurn:PlayerTwo;TurnCount:43"
 -- expected return values...
--- legalMoves g4 = [Add 0 0,Add 0 1,Add 0 2,Add 1 0,Add 1 1,Add 1 2]
--- getResult g4 = Nothing
--- whoWillWin g4 = Winner PlayerOne
--- bestMove g4 = Nothing
--- makeMove g4 (Add 1 0) = Just (Game {playerOne = [4,4], playerTwo = [1,1], p1Name = "Henry", p2Name = "Ashwin", turn = PlayerOne, turnCount = 42})
--- readGame s4 == Just g4
--- showGame g4 == s4
+-- legalMoves g3 = [Add 0 0,Add 0 1,Add 0 2,Add 1 0,Add 1 1,Add 1 2]
+-- getResult g3 = Nothing
+-- whoWillWin g3 = Winner PlayerOne
+-- bestMove g3 = Nothing
+-- makeMove g3 (Add 1 0) = Just (Game {playerOne = [4,4], playerTwo = [1,1], p1Name = "Henry", p2Name = "Ashwin", turn = PlayerOne, turnCount = 42})
+-- readGame s3 == Just g3
+-- showGame g3 == s3
+
+--game two moves from end, complex case
+gc2 = Game {playerOne = [2], playerTwo = [1], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerOne, turnCount = 50}
+sc2 = "Player1:OneHandHarry;Player2:OneFingerFrank;P1Hands:[2];P2Hands:[1];CurrentTurn:PlayerOne;TurnCount:50"
+-- expected return values...
+-- legalMove gc2 [add 0 0, add 0 0]
+-- getResut gc2 = Nothing
+-- whoWillWin gc2 = Winner PlayerTwo
+-- bestMove gc2 = Nothing
+-- makeMove gc2 = (Add 0 0) = Just (Game {playerOne = [2], playerTwo = [3], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerTwo, turnCount = 49})
+-- readGame sc2 == Just gc2
+-- showGame gc2 = sc2
+
+--game three moves from end, complex case
+gc3 = Game {playerOne = [1], playerTwo = [1], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerOne, turnCount = 50}
+sc3 = "Player1:OneHandHarry;Player2:OneFingerFrank;P1Hands:[1];P2Hands:[1];CurrentTurn:PlayerOne;TurnCount:50"
+-- expected return values...
+-- legalMove gc3 [add 0 0, add 0 0, add 0 0]
+-- getResut gc3 = Nothing
+-- whoWillWin gc3 = Winner PlayerOne
+-- bestMove gc3 = Nothing
+-- makeMove gc3 = (Add 0 0) = Just (Game {playerOne = [1], playerTwo = [2], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerTwo, turnCount = 49})
+-- readGame sc3 == Just gc3
+-- showGame gc3 = sc3
+
+--game four moves from end, complex case
+gc4 = Game {playerOne = [2,2], playerTwo = [1,1], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 50}
+sc4 = "Player1:TwoHandTerry;Player2:AmbidexterousAndy;P1Hands:[2,2];P2Hands:[1,1];CurrentTurn:PlayerOne;TurnCount:50"
+-- expected return values...
+-- legalMove gc3 [add 0 0, add 0 0, add 1 1, add 1 1]
+-- getResut gc3 = Nothing
+-- whoWillWin gc3 = Winner PlayerOne
+-- bestMove gc3 = Nothing
+-- makeMove gc3 = (Add 0 0) = Just (Game {playerOne = [2], playerTwo = [3], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerTwo, turnCount = 49})
+-- readGame sc3 == Just gc4
+-- showGame gc3 = sc4
+
