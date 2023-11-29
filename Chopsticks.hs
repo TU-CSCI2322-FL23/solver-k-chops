@@ -314,6 +314,20 @@ whoWillWin game =
                             Winner (opponent (turn game))
                     else
                         Tie
+--probem with just and need to add ranking
+whoMightWin :: Game -> Int -> Move
+whoMightWin game depth = 
+            if depth == 0 
+                then Just (move)
+                else  fst bestOutcome
+                    where
+                        allMoves = legalMoves game
+                        newGames = mapMaybe (gameMovePair game) allMoves
+                        outcomes = map (\(move, g) -> (whoMightWin g (depth - 1), move)) newGames
+                        bestOutcome = if turn game == PlayerOne
+                                      then maximum outcomes
+                                      else minimum outcomes
+                   
 
 gameMovePair :: Game -> Move -> Maybe (Move, Game)
 gameMovePair game move = 
