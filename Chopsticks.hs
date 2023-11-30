@@ -2,6 +2,8 @@ module Chopsticks where
 import Data.Maybe
 import Data.List
 import Data.List.Split
+import System.Environment
+import Distribution.Simple.Flag (BooleanFlag)
 
 type Hand = Int
 
@@ -359,7 +361,12 @@ putBestMove game =
     do
         putStrLn (show(bestMove game))
 
+readMove :: Move -> IO ()
+readMove move = putStrLn (show move)
+
 -- main :: IO ()
 -- main =  do x <- getLine
 --            game <- loadGame x
 --            putBestMove game
+
+
