@@ -2,7 +2,7 @@ import Chopsticks
 
 -- finished game
 g0 = Game {playerOne = [1], playerTwo = [], p1Name = "Josh", p2Name = "Ashwin", turn = PlayerTwo, turnCount = 25}
-s0 = "Player1:Josh;Player2:Ashwin;P1Hands:[1];P2Hands:[];CurrentTurn:PlayerTwo;TurnCount:25"
+s0 = "Josh;Ashwin;1;;2;25"
 -- expected return values...
 -- legalMoves g0 = []
 -- getResult g0 = Just (Winner PlayerOne)
@@ -14,7 +14,7 @@ s0 = "Player1:Josh;Player2:Ashwin;P1Hands:[1];P2Hands:[];CurrentTurn:PlayerTwo;T
 
 -- game one move from end
 g1 = Game {playerOne = [3], playerTwo = [2,2,2], p1Name = "Henry", p2Name = "Seven", turn = PlayerTwo, turnCount = 10}
-s1 = "Player1:Henry;Player2:Seven;P1Hands:[3];P2Hands:[2,2,2];CurrentTurn:PlayerTwo;TurnCount:10"
+s1 = "Henry;Seven;3;2,2,2;2;10"
 -- expected return values...
 -- legalMoves g1 = [Add 0 0,Add 1 0,Add 2 0]
 -- getResult g1 = Nothing
@@ -26,7 +26,7 @@ s1 = "Player1:Henry;Player2:Seven;P1Hands:[3];P2Hands:[2,2,2];CurrentTurn:Player
 
 -- game two moves from end
 g2 = Game {playerOne = [3], playerTwo = [2,2,2], p1Name = "James", p2Name = "Josh", turn = PlayerOne, turnCount = 31}
-s2 = "Player1:James;Player2:Josh;P1Hands:[3];P2Hands:[2,2,2];CurrentTurn:PlayerOne;TurnCount:31"
+s2 = "James;Josh;3;2,2,2;1;31"
 -- expected return values...
 -- legalMoves g2 = [Add 0 0,Add 0 1,Add 0 2]
 -- getResult g2 = Nothing
@@ -38,7 +38,7 @@ s2 = "Player1:James;Player2:Josh;P1Hands:[3];P2Hands:[2,2,2];CurrentTurn:PlayerO
 
 -- game four moves from end
 g4 = Game {playerOne = [4,4,4], playerTwo = [1,1], p1Name = "Henry", p2Name = "Ashwin", turn = PlayerTwo, turnCount = 43}
-s4 = "Player1:Henry;Player2:Ashwin;P1Hands:[4,4,4];P2Hands:[1,1];CurrentTurn:PlayerTwo;TurnCount:43"
+s4 = "Henry;Ashwin;4,4,4;1,1;2;43"
 -- expected return values...
 -- legalMoves g4 = [Add 0 0,Add 0 1,Add 0 2,Add 1 0,Add 1 1,Add 1 2]
 -- getResult g4 = Nothing

@@ -1,64 +1,40 @@
 module ReadWrite where
 import Chopsticks
 import Solver
+import Data.List
 import Data.List.Split
-import Data.Maybe -- will be removed when fromJust is removed from loadGame
+import Text.Read (readMaybe)
 
 readGame :: String -> Maybe Game
-readGame str = 
-    if ((length $ filter (== ':') str) == 6 && (length $ filter (== ';') str) == 5)
-        then readGameHelp 5 (map (break (== ':')) $ splitOn ";" str)
-    else Nothing
-    where readGameHelp :: Int -> [(String, String)] -> Maybe Game
-          readGameHelp 0 [(key, value)] = 
-            let count = read $ tail value  
-            in  if (count <= 50) 
-                    then Just Game {playerOne = [], playerTwo = [], p1Name = "", p2Name = "", turn = PlayerOne, turnCount = count}
-                else Nothing
-          readGameHelp 1 ((key, value):xs) = 
-            let game = readGameHelp 0 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> let t = tail value
-                              in  if (t == "PlayerOne") then Just g
-                                  else if (t == "PlayerTwo") then Just $ g {turn = PlayerTwo} 
-                                  else Nothing
-          readGameHelp 2 ((key, value):xs) = 
-            let game = readGameHelp 1 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> let handString = tail value
-                                  contentsString = init $ tail handString
-                                  hand = if (contentsString == "") then [] else map read (splitOn "," contentsString)
-                              in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
-                                      then Just $ g {playerTwo = hand}
-                                  else Nothing
-          readGameHelp 3 ((key, value):xs) = 
-            let game = readGameHelp 2 xs
-            in  case game of 
-                    Nothing -> Nothing
-                    Just g -> let handString = tail value
-                                  contentsString = init $ tail handString
-                                  hand = if (contentsString == "") then [] else map read (splitOn "," contentsString)
-                              in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
-                                      then Just $ g {playerOne = hand}
-                                  else Nothing
-          readGameHelp 4 ((key, value):xs) = 
-            let game = readGameHelp 3 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> Just $ g {p2Name = tail value}
-          readGameHelp 5 ((key, value):xs) = 
-            let game = readGameHelp 4 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> Just $ g {p1Name = tail value}                        
+readGame str =
+   case (splitOn ";" str) of
+      [p1N, p2N, p1HandsStr, p2HandsStr, turnStr, countStr] ->
+          do p1Hands <- readHands p1HandsStr
+             p2Hands <- readHands p2HandsStr
+             turnVal <- readPlayer turnStr
+             countVal <- readMaybe countStr
+             Just Game {p1Name = p1N
+                       ,p2Name = p2N
+                       ,playerOne = p1Hands
+                       ,playerTwo = p2Hands
+                       ,turn = turnVal
+                       ,turnCount = countVal
+                       }
+      _ -> Nothing
+     where readPlayer "1" = Just PlayerOne
+           readPlayer "2" = Just PlayerTwo
+           readPlayer _ = Nothing
+           readHands str = if str == "" then Just [] else sequence $ map readMaybe (splitOn "," str)                        
 
 showGame :: Game -> String
-showGame game = 
-    "Player1:" ++ (p1Name game) ++ ";" ++ "Player2:" ++ (p2Name game) ++ ";" ++ "P1Hands:" ++ (show (playerOne game)) ++ ";" ++ "P2Hands:" ++ (show (playerTwo game)) ++ ";" ++ "CurrentTurn:" ++ (show (turn game)) ++ ";" ++ "TurnCount:" ++ (show (turnCount game))
---showGame takes a game and provides a string that describes the game fully and is reversible to create a game if needed
---Ex: showGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"
+showGame game =
+     let showHands lst = intercalate "," $ map show lst
+         p1Hands = showHands $ playerOne game
+         p2Hands = showHands $ playerTwo game
+         t = if turn game == PlayerOne then "1" else "2"
+    in intercalate ";" [p1Name game, p2Name game, p1Hands, p2Hands, t, show $ turnCount game]
+--showGame takes a game and provides a string that describes the game fully
+--Ex: showGame game = "Ashwin;Josh;1,1,1,1;1,1,1,1;1;50"
                 
 writeGame :: Game -> FilePath -> IO ()
 writeGame game fileName =
@@ -67,11 +43,11 @@ writeGame game fileName =
     in
         writeFile fileName gameString
 
-loadGame :: FilePath -> IO Game
+loadGame :: FilePath -> IO (Maybe Game)
 loadGame fileName = 
     do
         gameString <- readFile fileName
-        return (fromJust (readGame gameString)) 
+        return (readGame gameString) 
 
 putBestMove :: Game -> IO ()
 putBestMove game = 
