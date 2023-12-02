@@ -45,8 +45,8 @@ makeMove game move =
                      do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
                          updateSide game (opponent $ turn game) updateDefenderHand
                  Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-                     do  split <- Just $ fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
-                         updatedAttackerHand <- Just $ replicate (length attackerHands) split
+                     do  let split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+                         let updatedAttackerHand = replicate (length attackerHands) split
                          updateSide game (turn game) updatedAttackerHand
     else Nothing
 
