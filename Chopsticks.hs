@@ -36,99 +36,6 @@ initializeGame playerOneName playerTwoName kHands =
         }
 
 
--- --Pretty Print Helper Functions
-
--- handAsciiArt :: Int -> String
--- handAsciiArt 0 = "---'____) \n" ++
---               "      (_____) \n" ++
---               "      (_____) \n" ++
---               "      (____) \n" ++
---               "---.__(___) \n"
-
-
--- handAsciiArt 1 = "---'____) \n" ++
---               "      _________) \n" ++
---               "      (_____) \n" ++
---               "      (____) \n" ++
---               "---.__(___) \n"
-
-
--- handAsciiArt 2 = "---'____) \n" ++
---               "      _________) \n" ++
---               "      ___________) \n" ++
---               "      (____) \n" ++
---               "---.(_____) \n"
-
-
--- handAsciiArt 3 ="---'____) \n" ++
---               "      _________) \n" ++
---               "      ___________) \n" ++
---               "      _________) \n" ++
---               "---.(_____) \n"
-
-
--- handAsciiArt 4 = "---'____) \n" ++
---               "      _________) \n" ++
---               "      ___________) \n" ++
---               "      _________) \n" ++
---               "---.________) \n"        
-
--- -- showHand :: Game -> Player -> Int -> String 
--- -- showHand game player handIndex
--- --     |currentHand == 0 =  handAsciiArt 0
--- --     |currentHand == 1 =  handAsciiArt 1
--- --     |currentHand == 2 =  handAsciiArt 2
--- --     |currentHand == 3 =  handAsciiArt 3
--- --     |currentHand == 4 =  handAsciiArt 4
--- --     where
--- --         playerHand = case player of
--- --             PlayerOne -> playerOne game
--- --             PlayerTwo -> playerTwo game
--- --         currentHand = getHand playerHand handIndex
-
--- --showHand takes a player and their hand index and returns ascii art for it
--- --Ex: showHand PlayerOne 2 where playerOne's hands are [1,2,3,4,0] ==  "---'____) \n" ++
--- --                                                                        "      _________) \n" ++
--- --                                                                        "      ___________) \n" ++
--- --                                                                        "      (____) \n" ++
--- --                                                                        "---.(_____)
-
-
--- -- Old IO Functions
-
--- askMove :: IO Move
--- askMove = do
---     putStrLn "Would you like to Add (1) or Split (2)?"
---     option <- getLine
---     case option of
---         -- "1" -> return Add  --this needs to be adjusted to account for updated Add type
---         "2" -> return Split
---         _ -> do 
---                 putStrLn "Wrong input"
---                 askMove --ask Dr. Fogarty if I can also print something along with doing askMove
--- --askMove either returns Add or Move depending on player input
--- --Ex: move <- askMove would make move = Add or Split depending on what the player put
-
--- --used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
-
-
--- chooseHand :: IO (Int,Int)
--- chooseHand = do
---     putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
---     output <- getLine
---     let outputList = words output 
---     case outputList of
---         [a,b] -> return (read a, read b) --unsafe. If a and b aren't numbers, then it'll error
---         _ -> do 
---                 putStrLn "Wrong input"
---                 chooseHand
-
-
---Move-Making Functions
-
--- A player is a hand a hand is a list of ints i.e [1,1,1,1,1,1] each 1 is a hand the 1 represents how many fingers are on a hand. OVerflow if >5 go back to 1 so 6 -> 1 7 -> 2 etc.
---make a new list every time the hand is updated
-
 makeMove :: Game -> Move -> Maybe Game
 makeMove game move = 
     if (move `elem` (legalMoves game))
@@ -309,11 +216,11 @@ whoWillWin game =
                     then
                         Winner (turn game)
                 else
-                    if any (== Winner (opponent (turn game))) outcomes
+                    if any (== Tie) outcomes
                         then
-                            Winner (opponent (turn game))
+                            Tie
                     else
-                        Tie
+                        Winner (opponent (turn game))
 
 gameMovePair :: Game -> Move -> Maybe (Move, Game)
 gameMovePair game move = 
@@ -331,15 +238,14 @@ bestMove game =
             let
                 allMoves = legalMoves game
                 newGames = mapMaybe (gameMovePair game) allMoves
-                outcomes = map (\(move, game) -> (move, whoWillWin game)) newGames
-                filteredOutcome = filter (\(move, result) -> case result of 
-                    Winner player -> player == (turn game) 
-                    Tie -> True 
-                    _ -> False ) outcomes
+                outcomes = map (\(move, game) -> (whoWillWin game, move)) newGames
             in
-                case filteredOutcome of
-                ((mv, _):_) -> Just mv 
-                _ -> Nothing 
+                case lookup (Winner $ turn game) outcomes of
+                Just move -> Just move 
+                Nothing -> 
+                    case lookup (Tie) outcomes of
+                        Just move -> Just move
+                        Nothing -> Nothing
                 
 writeGame :: Game -> FilePath -> IO ()
 writeGame game fileName =
