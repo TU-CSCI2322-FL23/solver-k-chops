@@ -10,6 +10,8 @@ import Control.Monad
 import Data.Maybe
 import System.Exit
 import Chopsticks
+import Solver
+import ReadWrite
 import System.Environment
 import System.IO
 
