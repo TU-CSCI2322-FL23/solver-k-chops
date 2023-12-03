@@ -38,17 +38,17 @@ initializeGame playerOneName playerTwoName kHands =
 
 makeMove :: Game -> Move -> Maybe Game
 makeMove game move = 
-    if (move `elem` (legalMoves game))
-        then let (attackerHands, defenderHands) = handsFor game
-             in case move of 
-                 (Add aHand dHand) -> 
-                     do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
-                         updateSide game (opponent $ turn game) updateDefenderHand
-                 Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-                     do  let split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
-                         let updatedAttackerHand = replicate (length attackerHands) split
-                         updateSide game (turn game) updatedAttackerHand
-    else Nothing
+    let (attackerHands, defenderHands) = handsFor game
+    in case move of 
+        (Add aHand dHand) -> 
+            do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
+                updateSide game (opponent $ turn game) updateDefenderHand
+        Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
+            if canSplit game   
+                then do let split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+                        let updatedAttackerHand = replicate (length attackerHands) split
+                        updateSide game (turn game) updatedAttackerHand
+            else Nothing
 
 handsFor :: Game -> ([Hand], [Hand])
 handsFor game = 
@@ -103,11 +103,10 @@ legalMoves game =
     case (getResult game) of
         Just result -> []
         Nothing -> 
-            if (((sum pHand) `mod` (length pHand) == 0) && (not $ all (\h -> h == ((sum pHand) `div` (length pHand))) pHand))
+            if canSplit game
                 then Split : allAdds
             else allAdds
-            where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
-                  allAdds :: [Move]
+            where allAdds :: [Move]
                   allAdds = 
                     let numP1Hands = length $ playerOne game
                         numP2Hands = length $ playerTwo game
@@ -121,6 +120,11 @@ legalMoves game =
 -- splitting is legal when the number of fingers can be divided evenly among the current player's remaining hands, as long as doing so would actually modify their hands
 -- an Add move is legal if both Ints provided are valid indices into the two players' hands; any existing hand can attack any existing hand of its opponent
 -- returns an empty list if the game has ended
+
+canSplit :: Game -> Bool
+canSplit game = 
+    ((sum pHand) `mod` (length pHand) == 0) && (not $ all (\h -> h == ((sum pHand) `div` (length pHand))) pHand)
+    where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
 
 opponent :: Player -> Player
 opponent PlayerOne = PlayerTwo
