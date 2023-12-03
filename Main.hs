@@ -40,7 +40,7 @@ options :: [OptDescr Flag]
 options = [ Option ['h'] ["help"] (NoArg HelpFlag) "Print usage information and exit.",
             Option ['w'] ["winner"] (NoArg WinnerFlag) "Prints out the best move with no cut-off depth",
             Option ['d'] ["depth"] (ReqArg DepthFlag "<num>") "Allows user to specify <num> as a cutoff depth",
-            Option ['m'] ["move"] (ReqArg MoveFlag "<move>") "Applies <move> to the current game and prints out the resulting game state (formatted like -m (Add 0 0) or -m Split)",
+            Option ['m'] ["move"] (ReqArg MoveFlag "<move>") "Applies <move> to the current game and prints out the resulting game state (formatted like -m Add 0 0 or -m Split)",
             Option ['v'] ["verbose"] (NoArg VerboseFlag) "Outputs the move and a description of how good it is: win, lose, tie, or a rating"
           ]
 
@@ -49,10 +49,8 @@ readMove "Split" = Split
 readMove move = 
    case words move of
    ["Add", x, y] -> Add (read x) (read y)
+   _ -> error "not a valid move"
 
--- applyFlag :: Game -> Flag -> Maybe Move
--- applyFlag game WinnerFlag = mapMaybe bestMove game   
--- readMove (applyFlag game WinnerFlag) 
 
 
 main :: IO ()
@@ -61,11 +59,14 @@ main = do
    let (flags, inputs, errors) =  getOpt Permute options args
    let fileName = if null inputs then "Game_Log.txt" else head inputs
    if HelpFlag `elem` flags
-   then putStrLn $ usageInfo "Chopsticks [options] [file]" options
+      then callHelpFlag
    else  
       do game <- loadGame fileName
          case flags of 
-            [WinnerFlag] -> putBestMove game
+            [WinnerFlag] -> callWinnerFlag game
+            [DepthFlag depth] -> callDepthFlag game (read depth)
+            [MoveFlag move] -> callMoveFlag game (readMove move) fileName
+            
             _ -> putStrLn "hi"
          -- if WinnerFlag `elem` flags
          --   then 
@@ -83,6 +84,44 @@ main = do
 --maybe do pattern matching but are calls to main allowed to have multiple flags?
 -- if so we need to do pattern matching for all combinations which is kind of a lot
 
+       
+callHelpFlag :: IO ()
+callHelpFlag = 
+   do 
+      putStrLn $ usageInfo "Chopsticks [options] [file]" options
+
+callWinnerFlag :: Game -> IO ()
+callWinnerFlag game = 
+   do 
+      print $ bestMove game
+
+callDepthFlag :: Game -> Int -> IO () 
+callDepthFlag game = 
+      do
+         print --placeholder until I get Ashwin's function
+      -- use (read DepthFlag) as cut-off param for new bestMove
+
+callMoveFlag :: Game -> Move -> FilePath -> IO ()
+callMoveFlag game move file = 
+   do 
+      case makeMove game move of
+         Nothing -> error "not a valid move"
+         _ -> print $ makeMove game move
+--not sure if the move flag needs to update the game or just print the game state if the move was made
+--if it needs to update the game, maybe use writeGame game file 
+
+callVerboseFlag :: Game -> Move -> IO ()
+callVerboseFlag game move = undefined --placeholder until I get the rateGame
+   --do
+      --case rateGame of
+         --case for if move leads to winner
+         --case for if move leads to loser
+         --case for if move leads to tie
+         --case for game rating
+      
+      
+   
 
 
-        
+
+

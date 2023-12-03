@@ -356,13 +356,10 @@ loadGame fileName =
         gameString <- readFile fileName
         return (fromJust (readGame gameString)) 
 
-putBestMove :: Game -> IO ()
-putBestMove game = 
-    do
-        putStrLn (show(bestMove game))
-
-readMove :: Move -> IO ()
-readMove move = putStrLn (show move)
+putReadMove :: Move -> IO ()
+putReadMove move = 
+    do 
+        putStrLn (show move)
 
 -- main :: IO ()
 -- main =  do x <- getLine
