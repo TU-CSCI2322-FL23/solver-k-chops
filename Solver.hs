@@ -18,7 +18,7 @@ whoWillWin game =
                 newGames = mapMaybe (makeMove game) (legalMoves game)
                 outcomes = map (whoWillWin) newGames
             in
-                if any (== Winner (turn game)) outcomes --found link to https://zvon.org/other/haskell/Outputprelude/any_f.html 
+                if (Winner $ turn game) `elem` outcomes --found link to https://zvon.org/other/haskell/Outputprelude/any_f.html 
                     then
                         Winner (turn game)
                 else
