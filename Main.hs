@@ -10,6 +10,8 @@ import Control.Monad
 import Data.Maybe
 import System.Exit
 import Chopsticks
+import Solver
+import ReadWrite
 import System.Environment
 import System.IO
 
@@ -27,7 +29,7 @@ main = do
     if Help`elem` flags
       then putStrLn $ usageInfo "Chopsitcks [options] [file]" options
       else
-            do game <- loadGame fileName
-            putBestMove game
+          do game <- loadGame fileName
+          putBestMove game
 
 

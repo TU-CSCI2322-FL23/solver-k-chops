@@ -36,112 +36,19 @@ initializeGame playerOneName playerTwoName kHands =
         }
 
 
--- --Pretty Print Helper Functions
-
--- handAsciiArt :: Int -> String
--- handAsciiArt 0 = "---'____) \n" ++
---               "      (_____) \n" ++
---               "      (_____) \n" ++
---               "      (____) \n" ++
---               "---.__(___) \n"
-
-
--- handAsciiArt 1 = "---'____) \n" ++
---               "      _________) \n" ++
---               "      (_____) \n" ++
---               "      (____) \n" ++
---               "---.__(___) \n"
-
-
--- handAsciiArt 2 = "---'____) \n" ++
---               "      _________) \n" ++
---               "      ___________) \n" ++
---               "      (____) \n" ++
---               "---.(_____) \n"
-
-
--- handAsciiArt 3 ="---'____) \n" ++
---               "      _________) \n" ++
---               "      ___________) \n" ++
---               "      _________) \n" ++
---               "---.(_____) \n"
-
-
--- handAsciiArt 4 = "---'____) \n" ++
---               "      _________) \n" ++
---               "      ___________) \n" ++
---               "      _________) \n" ++
---               "---.________) \n"        
-
--- -- showHand :: Game -> Player -> Int -> String 
--- -- showHand game player handIndex
--- --     |currentHand == 0 =  handAsciiArt 0
--- --     |currentHand == 1 =  handAsciiArt 1
--- --     |currentHand == 2 =  handAsciiArt 2
--- --     |currentHand == 3 =  handAsciiArt 3
--- --     |currentHand == 4 =  handAsciiArt 4
--- --     where
--- --         playerHand = case player of
--- --             PlayerOne -> playerOne game
--- --             PlayerTwo -> playerTwo game
--- --         currentHand = getHand playerHand handIndex
-
--- --showHand takes a player and their hand index and returns ascii art for it
--- --Ex: showHand PlayerOne 2 where playerOne's hands are [1,2,3,4,0] ==  "---'____) \n" ++
--- --                                                                        "      _________) \n" ++
--- --                                                                        "      ___________) \n" ++
--- --                                                                        "      (____) \n" ++
--- --                                                                        "---.(_____)
-
-
--- -- Old IO Functions
-
--- askMove :: IO Move
--- askMove = do
---     putStrLn "Would you like to Add (1) or Split (2)?"
---     option <- getLine
---     case option of
---         -- "1" -> return Add  --this needs to be adjusted to account for updated Add type
---         "2" -> return Split
---         _ -> do 
---                 putStrLn "Wrong input"
---                 askMove --ask Dr. Fogarty if I can also print something along with doing askMove
--- --askMove either returns Add or Move depending on player input
--- --Ex: move <- askMove would make move = Add or Split depending on what the player put
-
--- --used this line https://www.haskell.org/tutorial/io.html to help write this function (figuring out how to return a type with IO)
-
-
--- chooseHand :: IO (Int,Int)
--- chooseHand = do
---     putStrLn "If attacking, choose an attacking hand and a target hand, if splitting choose a hand to split and a hand to add\n Ex: 3 4"
---     output <- getLine
---     let outputList = words output 
---     case outputList of
---         [a,b] -> return (read a, read b) --unsafe. If a and b aren't numbers, then it'll error
---         _ -> do 
---                 putStrLn "Wrong input"
---                 chooseHand
-
-
---Move-Making Functions
-
--- A player is a hand a hand is a list of ints i.e [1,1,1,1,1,1] each 1 is a hand the 1 represents how many fingers are on a hand. OVerflow if >5 go back to 1 so 6 -> 1 7 -> 2 etc.
---make a new list every time the hand is updated
-
 makeMove :: Game -> Move -> Maybe Game
 makeMove game move = 
-    if (move `elem` (legalMoves game))
-        then let (attackerHands, defenderHands) = handsFor game
-             in case move of 
-                 (Add aHand dHand) -> 
-                     do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
-                         updateSide game (opponent $ turn game) updateDefenderHand
-                 Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
-                     do  split <- Just $ fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
-                         updatedAttackerHand <- Just $ replicate (length attackerHands) split
-                         updateSide game (turn game) updatedAttackerHand
-    else Nothing
+    let (attackerHands, defenderHands) = handsFor game
+    in case move of 
+        (Add aHand dHand) -> 
+            do  updateDefenderHand <- addHands attackerHands defenderHands aHand dHand --update defender hand with overflow, uses helper updateHand to save at correct index
+                updateSide game (opponent $ turn game) updateDefenderHand
+        Split -> --this takes the TOTAL number of fingers accross all hands, and divides them evenly[5,4,3] -> [4,4,4]
+            if canSplit game   
+                then do let split = fromIntegral (sum attackerHands) `div` fromIntegral (length attackerHands)
+                        let updatedAttackerHand = replicate (length attackerHands) split
+                        updateSide game (turn game) updatedAttackerHand
+            else Nothing
 
 handsFor :: Game -> ([Hand], [Hand])
 handsFor game = 
@@ -150,22 +57,19 @@ handsFor game =
         PlayerTwo -> (playerTwo game, playerOne game) 
 
 addHands :: [Hand] -> [Hand] -> Int -> Int -> Maybe [Hand]
-addHands attackerHands defenderHands aHand dHand = 
-    do  attackerHand <- getHand attackerHands aHand  --choose an index in [1,1,1,1,1] so attacker hand should = 1
-        defenderHand <- getHand defenderHands dHand --choose an index in [1,1,1,1,1] so defender hand should = 1
-        sumFingers <- Just $ attackerHand + defenderHand --add attacker hand too defender hand
-        overflow <- Just $ sumFingers `mod` 5  --overflow is the remainder of sumFingers / 5
-        updateHand defenderHands dHand overflow --update defender hand with overflow, uses helper updateHand to save at correct index
+addHands attackerHands defenderHands aHand dHand 
+    | dHand < 0 = Nothing
+    | otherwise = 
+        case (getHand attackerHands aHand, splitAt dHand defenderHands) of 
+            (Just attackerHand, (befores, defenderHand:afters)) ->
+                let overFlow = (attackerHand + defenderHand) `mod` 5
+                    newHands = if overFlow == 0 then [] else [overFlow]
+                in Just $ befores++newHands++afters 
+            _ -> Nothing
     where getHand :: [Hand] -> Int -> Maybe Hand
-          getHand [] index = Nothing
-          getHand [x] index = 
-            if index == 0 
-                then Just x
-            else Nothing
-          getHand (x:xs) index =
-            if index == 0
-                then Just x
-            else getHand xs (index - 1)
+          getHand (x:xs) 0 = Just x
+          getHand (x:xs) index = getHand xs (index-1)
+          getHand [] _ = Nothing
           -- getHand shows the number of fingers on that hand
           --Ex: getHand playerOne game 5 (where playerOne Hands are [2,1,3,5,4]) = 4
 
@@ -199,11 +103,10 @@ legalMoves game =
     case (getResult game) of
         Just result -> []
         Nothing -> 
-            if (((sum pHand) `mod` (length pHand) == 0) && (not $ all (\h -> h == ((sum pHand) `div` (length pHand))) pHand))
+            if canSplit game
                 then Split : allAdds
             else allAdds
-            where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
-                  allAdds :: [Move]
+            where allAdds :: [Move]
                   allAdds = 
                     let numP1Hands = length $ playerOne game
                         numP2Hands = length $ playerTwo game
@@ -218,6 +121,11 @@ legalMoves game =
 -- an Add move is legal if both Ints provided are valid indices into the two players' hands; any existing hand can attack any existing hand of its opponent
 -- returns an empty list if the game has ended
 
+canSplit :: Game -> Bool
+canSplit game = 
+    ((sum pHand) `mod` (length pHand) == 0) && (not $ all (\h -> h == ((sum pHand) `div` (length pHand))) pHand)
+    where pHand = if (turn game == PlayerOne) then playerOne game else playerTwo game
+
 opponent :: Player -> Player
 opponent PlayerOne = PlayerTwo
 opponent PlayerTwo = PlayerOne
@@ -231,89 +139,6 @@ prettyShowGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------
           turnName :: String
           turnName = if ((turn game) == PlayerOne) then p1Name game else p2Name game
 
-
-readGame :: String -> Maybe Game
-readGame str = 
-    if ((length $ filter (== ':') str) == 6 && (length $ filter (== ';') str) == 5)
-        then readGameHelp 5 (map (break (== ':')) $ splitOn ";" str)
-    else Nothing
-    where readGameHelp :: Int -> [(String, String)] -> Maybe Game
-          readGameHelp 0 [(key, value)] = 
-            let count = read $ tail value  
-            in  if (count <= 50) 
-                    then Just Game {playerOne = [], playerTwo = [], p1Name = "", p2Name = "", turn = PlayerOne, turnCount = count}
-                else Nothing
-          readGameHelp 1 ((key, value):xs) = 
-            let game = readGameHelp 0 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> let t = tail value
-                              in  if (t == "PlayerOne") then Just g
-                                  else if (t == "PlayerTwo") then Just $ g {turn = PlayerTwo} 
-                                  else Nothing
-          readGameHelp 2 ((key, value):xs) = 
-            let game = readGameHelp 1 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> let handString = tail value
-                                  contentsString = init $ tail handString
-                                  hand = if (contentsString == "") then [] else map read (splitOn "," contentsString)
-                              in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
-                                      then Just $ g {playerTwo = hand}
-                                  else Nothing
-          readGameHelp 3 ((key, value):xs) = 
-            let game = readGameHelp 2 xs
-            in  case game of 
-                    Nothing -> Nothing
-                    Just g -> let handString = tail value
-                                  contentsString = init $ tail handString
-                                  hand = if (contentsString == "") then [] else map read (splitOn "," contentsString)
-                              in  if ((head handString == '[') && (last handString == ']') && (all (\c -> c == ',' || c `elem` ['0','1','2','3','4','5','6','7','8','9']) contentsString)) 
-                                      then Just $ g {playerOne = hand}
-                                  else Nothing
-          readGameHelp 4 ((key, value):xs) = 
-            let game = readGameHelp 3 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> Just $ g {p2Name = tail value}
-          readGameHelp 5 ((key, value):xs) = 
-            let game = readGameHelp 4 xs
-            in  case game of
-                    Nothing -> Nothing
-                    Just g -> Just $ g {p1Name = tail value}                        
-
-showGame :: Game -> String
-showGame game = 
-    "Player1:" ++ (p1Name game) ++ ";" ++ "Player2:" ++ (p2Name game) ++ ";" ++ "P1Hands:" ++ (show (playerOne game)) ++ ";" ++ "P2Hands:" ++ (show (playerTwo game)) ++ ";" ++ "CurrentTurn:" ++ (show (turn game)) ++ ";" ++ "TurnCount:" ++ (show (turnCount game))
---showGame takes a game and provides a string that describes the game fully and is reversible to create a game if needed
---Ex: showGame game = "Player1:Ashwin;Player2:Josh;P1Hands:[1,1,1,1];P2Hands:[1,1,1,1];CurrentTurn:PlayerOne;TurnCount:50"
-
-gameOutcome :: Game -> [Game]
-gameOutcome game = 
-        let
-            allMoves = legalMoves game
-        in    
-            mapMaybe (\move -> makeMove game move) allMoves
-            
-
-whoWillWin :: Game ->  Result
-whoWillWin game = 
-    case (getResult game) of
-        Just result -> result --this takes care of the case if player already won
-        Nothing ->
-            let 
-                newGames = mapMaybe (makeMove game) (legalMoves game)
-                outcomes = map (whoWillWin) newGames
-            in
-                if any (== Winner (turn game)) outcomes --found link to https://zvon.org/other/haskell/Outputprelude/any_f.html 
-                    then
-                        Winner (turn game)
-                else
-                    if any (== Winner (opponent (turn game))) outcomes
-                        then
-                            Winner (opponent (turn game))
-                    else
-                        Tie
 --probem with just and need to add ranking
 whoMightWin :: Game -> Int -> Move
 whoMightWin game depth = 
@@ -329,51 +154,3 @@ whoMightWin game depth =
                                       else minimum outcomes
                    
 
-gameMovePair :: Game -> Move -> Maybe (Move, Game)
-gameMovePair game move = 
-    case makeMove game move of
-        Just resultGame -> Just (move, resultGame)
-        Nothing -> Nothing
-
-
-
-bestMove :: Game -> Maybe Move
-bestMove game =
-        case getResult game of
-        Just result -> Nothing 
-        Nothing -> 
-            let
-                allMoves = legalMoves game
-                newGames = mapMaybe (gameMovePair game) allMoves
-                outcomes = map (\(move, game) -> (move, whoWillWin game)) newGames
-                filteredOutcome = filter (\(move, result) -> case result of 
-                    Winner player -> player == (turn game) 
-                    Tie -> True 
-                    _ -> False ) outcomes
-            in
-                case filteredOutcome of
-                ((mv, _):_) -> Just mv 
-                _ -> Nothing 
-                
-writeGame :: Game -> FilePath -> IO ()
-writeGame game fileName =
-    let
-        gameString = showGame game
-    in
-        writeFile fileName gameString
-
-loadGame :: FilePath -> IO Game
-loadGame fileName = 
-    do
-        gameString <- readFile fileName
-        return (fromJust (readGame gameString)) 
-
-putBestMove :: Game -> IO ()
-putBestMove game = 
-    do
-        putStrLn (show(bestMove game))
-
--- main :: IO ()
--- main =  do x <- getLine
---            game <- loadGame x
---            putBestMove game
