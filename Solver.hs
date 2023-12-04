@@ -3,18 +3,18 @@ import Chopsticks
 import Data.Maybe
 
 gameOutcome :: Game -> [Game]
-gameOutcome game = 
+gameOutcome game =
         let
             allMoves = legalMoves game
-        in    
+        in
             mapMaybe (\move -> makeMove game move) allMoves
-            
+
 whoWillWin :: Game ->  Result
-whoWillWin game = 
+whoWillWin game =
     case (getResult game) of
         Just result -> result --this takes care of the case if player already won
         Nothing ->
-            let 
+            let
                 newGames = mapMaybe (makeMove game) (legalMoves game)
                 outcomes = map (whoWillWin) newGames
             in
@@ -29,7 +29,7 @@ whoWillWin game =
                         Winner (opponent (turn game))
 
 gameMovePair :: Game -> Move -> Maybe (Move, Game)
-gameMovePair game move = 
+gameMovePair game move =
     case makeMove game move of
         Just resultGame -> Just (move, resultGame)
         Nothing -> Nothing
@@ -37,22 +37,22 @@ gameMovePair game move =
 bestMove :: Game -> Maybe Move
 bestMove game =
         case getResult game of
-        Just result -> Nothing 
-        Nothing -> 
+        Just result -> Nothing
+        Nothing ->
             let
                 allMoves = legalMoves game
                 newGames = mapMaybe (gameMovePair game) allMoves
                 outcomes = map (\(move, game) -> (whoWillWin game, move)) newGames
             in
                 case lookup (Winner $ turn game) outcomes of
-                Just move -> Just move 
-                Nothing -> 
+                Just move -> Just move
+                Nothing ->
                     case lookup (Tie) outcomes of
                         Just move -> Just move
                         Nothing -> Nothing
 
 handDiff :: [Hand] -> [Hand] -> Int
-handDiff playerA playerB = (length playerA) - (length playerB) 
+handDiff playerA playerB = (length playerA) - (length playerB)
 --calculates the difference in hands between players. If the resulting Int is negative, than playerA has less hands than playerB. If resulting Int is positive, than playerA has more hands 
 --Ex: handDiff (playerOne game) (playerTwo game) where playerOne has [2,3] and playerTwo has [4,5,6] = -1 
 
@@ -67,7 +67,7 @@ handDiff playerA playerB = (length playerA) - (length playerB)
 --         sum dist
 
 scoreWinnerLoser :: Game -> Int
-scoreWinnerLoser game = 
+scoreWinnerLoser game =
     let result = getResult game
     in
         case result of
@@ -77,9 +77,20 @@ scoreWinnerLoser game =
             Nothing -> 0
 
 rateGame :: Game -> Int
-scoreGame game = 
-    let 
+rateGame game =
+    let
         p1HandDiff = handDiff (playerOne game) (playerTwo game)
-        p1WinScore = scoreWinnerLoser game 
+        p1WinScore = scoreWinnerLoser game
     in
         p1HandDiff + p1WinScore
+
+--probem with just and need to add ranking
+whoMightWin :: Game -> Int -> Maybe (Maybe Move, Int)
+whoMightWin game depth =
+            if depth == 0
+                then Just (bestMove game, rateGame game)
+                else  Just (move, rating)
+                    where
+                        outcomes = map (\(g) -> whoMightWin game (depth - 1))
+                        move = bestMove (head outcomes)
+                        rating = rateGame (head outcomes)
