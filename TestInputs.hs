@@ -55,37 +55,38 @@ s4 = "Player1:Henry;Player2:Ashwin;P1Hands:[4,4,4];P2Hands:[1,1];CurrentTurn:Pla
 
 --game two moves from end, complex case
 gc2 = Game {playerOne = [2], playerTwo = [1], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerOne, turnCount = 50}
-sc2 = "Player1:OneHandHarry;Player2:OneFingerFrank;P1Hands:[2];P2Hands:[1];CurrentTurn:PlayerOne;TurnCount:50"
+sc2 = "OneHandHarry;OneFingerFrank;2;1;1;50"
 -- expected return values...
--- legalMove gc2 [add 0 0, add 0 0]
--- getResut gc2 = Nothing
+-- legalMoves gc2 [Add 0 0]
+-- getResult gc2 = Nothing
 -- whoWillWin gc2 = Winner PlayerTwo
 -- bestMove gc2 = Nothing
--- makeMove gc2 = (Add 0 0) = Just (Game {playerOne = [2], playerTwo = [3], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerTwo, turnCount = 49})
+-- makeMove gc2 (Add 0 0) = Just (Game {playerOne = [2], playerTwo = [3], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerTwo, turnCount = 49})
 -- readGame sc2 == Just gc2
 -- showGame gc2 = sc2
 
 --game three moves from end, complex case
 gc3 = Game {playerOne = [1], playerTwo = [1], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerOne, turnCount = 50}
-sc3 = "Player1:OneHandHarry;Player2:OneFingerFrank;P1Hands:[1];P2Hands:[1];CurrentTurn:PlayerOne;TurnCount:50"
+sc3 = "OneHandHarry;OneFingerFrank;1;1;1;50"
 -- expected return values...
--- legalMove gc3 [add 0 0, add 0 0, add 0 0]
--- getResut gc3 = Nothing
+-- legalMoves gc3 [Add 0 0]
+-- getResult gc3 = Nothing
 -- whoWillWin gc3 = Winner PlayerOne
--- bestMove gc3 = Nothing
--- makeMove gc3 = (Add 0 0) = Just (Game {playerOne = [1], playerTwo = [2], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerTwo, turnCount = 49})
+-- bestMove gc3 = (Add 0 0)
+-- makeMove gc3 (Add 0 0) = Just (Game {playerOne = [1], playerTwo = [2], p1Name = "OneHandHarry", p2Name = "OneFingerFrank", turn = PlayerTwo, turnCount = 49})
 -- readGame sc3 == Just gc3
 -- showGame gc3 = sc3
 
 --game four moves from end, complex case
-gc4 = Game {playerOne = [2,2], playerTwo = [1,1], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 50}
-sc4 = "Player1:TwoHandTerry;Player2:AmbidexterousAndy;P1Hands:[2,2];P2Hands:[1,1];CurrentTurn:PlayerOne;TurnCount:50"
+--doesn't work, need to make a better case 
+gc4 = Game {playerOne = [1], playerTwo = [1], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 50}
+sc4 = "TwoHandTerry;AmbidexterousAndy;4;3;1;50"
 -- expected return values...
--- legalMove gc3 [add 0 0, add 0 0, add 1 1, add 1 1]
--- getResut gc3 = Nothing
--- whoWillWin gc3 = Winner PlayerOne
--- bestMove gc3 = Nothing
--- makeMove gc3 = (Add 0 0) = Just (Game {playerOne = [2], playerTwo = [3], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerTwo, turnCount = 49})
--- readGame sc3 == Just gc4
--- showGame gc3 = sc4
+-- legalMoves gc4 [Add 0 0]
+-- getResult gc4 = Nothing
+-- whoWillWin gc4 = Winner PlayerOne
+-- bestMove gc4 = (Add 0 0)
+-- makeMove gc4 (Add 0 0) = Just (Game {playerOne = [4,3], playerTwo = [1,1], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 49})
+-- readGame sc4 == Just gc4
+-- showGame gc4 = sc4
 
