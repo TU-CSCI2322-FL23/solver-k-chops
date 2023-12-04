@@ -2,6 +2,8 @@ module Chopsticks where
 import Data.Maybe
 import Data.List
 import Data.List.Split
+import System.Environment
+import Distribution.Simple.Flag (BooleanFlag)
 
 type Hand = Int
 
