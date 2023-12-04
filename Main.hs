@@ -16,10 +16,10 @@ import System.IO
 
 data Flag = HelpFlag | WinnerFlag | DepthFlag String | MoveFlag String | VerboseFlag deriving(Eq, Show)
 options :: [OptDescr Flag]
-options = [ Option ['h'] ["help"] (NoArg HelpFlag) "Print usage information and exit.",
+options = [ Option ['h'] ["help"] (NoArg HelpFlag) "Print flag usage information and exits",
             Option ['w'] ["winner"] (NoArg WinnerFlag) "Prints out the best move with no cut-off depth",
             Option ['d'] ["depth"] (ReqArg DepthFlag "<num>") "Allows user to specify <num> as a cutoff depth",
-            Option ['m'] ["move"] (ReqArg MoveFlag "<move>") "Applies <move> to the current game and prints out the resulting game state (formatted like -m Add 0 0 or -m Split)",
+            Option ['m'] ["move"] (ReqArg MoveFlag "<move>") "Applies <move> to the current game and prints out the resulting game state (-m \"Add 0 0\" or -m \"Split\")",
             Option ['v'] ["verbose"] (NoArg VerboseFlag) "Outputs the move and a description of how good it is: win, lose, tie, or a rating"
           ]
 
