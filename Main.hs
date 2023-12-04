@@ -14,7 +14,7 @@ import Solver
 import ReadWrite
 import System.Environment
 import System.IO
-
+import TestInputs
 
 data Flag = HelpFlag | WinnerFlag | DepthFlag String | MoveFlag String | VerboseFlag deriving(Eq, Show)
 options :: [OptDescr Flag]
@@ -32,8 +32,12 @@ main =
       let (flags, inputs, errors) =  getOpt Permute options args
       let fileName = if null inputs then "Game_Log.txt" else head inputs
       game <- loadGame fileName
-      mapM_ (callCorrectFlag game) flags
-      print (bestMove game)
+      case game of 
+         Nothing -> putStrLn "Error, invalid game"
+         Just game ->
+            do
+            mapM_ (callCorrectFlag game) flags
+            print (bestMove game)
 
 readMove :: String -> Move
 readMove "Split" = Split
