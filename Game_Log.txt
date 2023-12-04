@@ -1,1 +1,1 @@
-Player1:Ashwin;Player2:Josh;P1Hands:[2,2,2];P2Hands:[1];CurrentTurn:PlayerOne;TurnCount:10
+Josh;Ashwin;1;;2;25

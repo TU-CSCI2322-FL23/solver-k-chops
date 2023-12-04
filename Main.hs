@@ -25,6 +25,7 @@ options = [ Option ['h'] ["help"] (NoArg HelpFlag) "Print flag usage information
             Option ['v'] ["verbose"] (NoArg VerboseFlag) "Outputs the move and a description of how good it is: win, lose, tie, or a rating"
           ]
 
+
 main :: IO ()
 main =
    do
@@ -32,8 +33,12 @@ main =
       let (flags, inputs, errors) =  getOpt Permute options args
       let fileName = if null inputs then "Game_Log.txt" else head inputs
       game <- loadGame fileName
-      mapM_ (callCorrectFlag game) flags
-      print (bestMove game)
+      case game of 
+         Nothing -> putStrLn "AAAAAAAHHHDFKLBJIDIEIEEE"
+         Just game -> 
+            do
+               mapM_ (callCorrectFlag game) flags
+               print (bestMove game)
 
 readMove :: String -> Move
 readMove "Split" = Split
@@ -74,8 +79,7 @@ callMoveFlag game move =
       case makeMove game move of
          Nothing -> error "not a valid move"
          _ -> print $ makeMove game move
---not sure if the move flag needs to update the game or just print the game state if the move was made
---if it needs to update the game, maybe use writeGame game file 
+
 
 callVerboseFlag :: Game -> IO ()
 callVerboseFlag game = do print "verbose" --placeholder until I get the rateGame
