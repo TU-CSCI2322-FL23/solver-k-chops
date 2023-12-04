@@ -10,6 +10,8 @@ import Control.Monad
 import Data.Maybe
 import System.Exit
 import Chopsticks
+import Solver
+import ReadWrite
 import System.Environment
 import System.IO
 
@@ -84,6 +86,7 @@ callVerboseFlag game = do print "verbose" --placeholder until I get the rateGame
          --case for if move leads to tie
          --case for game rating
       --confused as to what it means by move
+
 
 
 
