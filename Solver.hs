@@ -85,30 +85,28 @@ rateGame game =
         p1HandDiff + p1WinScore
 
 --probem with just and need to add ranking
-whoMightWin :: Game -> Int -> Maybe Result
-whoMightWin game depth =
-    if depth > 0 
-        then
-            case (getResult game) of
-                Just result -> Just result --this takes care of the case if player already won
-                Nothing ->
-                    let
-                        newGames = mapMaybe (makeMove game) (legalMoves game)
-                        outcomes = map (\g -> whoMightWin g (depth - 1)) newGames
-                    in
-                        if (Just (Winner $ turn game)) `elem` outcomes --found link to https://zvon.org/other/haskell/Outputprelude/any_f.html 
-                            then
-                                Just (Winner (turn game))
-                        else
-                            if any (== Just (Tie)) outcomes
-                                then
-                                    Just Tie
-                            else
-                                Just (Winner (opponent (turn game)))
-    else
-        Nothing
-
+whoMightWin :: Game -> Int -> Maybe (Int, Maybe Move)
+whoMightWin game depth 
+    | depth <= 0 = Just (rateGame game, Nothing)
+    | otherwise =
+        let
+            -- newGames = mapMaybe (makeMove game) (legalMoves game)
+            -- outcomes = map (\g -> whoMightWin g (depth - 1)) newGames
+            --need to find logic to create a ratedGameList
+        in
+            if (turn game == PlayerOne)
+                then
+                    Just (maximumBy  (comparing fst) ratedGameList) --https://stackoverflow.com/questions/18118280/finding-maximum-element-in-a-list-of-tuples
+            else
+                Just (minimumBy (comparing fst) ratedGameList)
         
-                -- outcomes = map (\(g) -> whoWillWin game (depth - 1))
-        -- move = bestMove (head outcomes)
-        -- rating = rateGame (head outcomes)
+
+-- whoMightWin :: Game -> Int -> Maybe (Maybe Move, Int)
+-- whoMightWin game depth =
+--             if depth == 0
+--                 then Just (bestMove game, rateGame game)
+--                 else  Just (move, rating)
+--                     where
+--                         outcomes = map (\(g) -> whoMightWin game (depth - 1))
+--                         move = bestMove (head outcomes)
+--                         rating = rateGame (head outcomes)
