@@ -78,8 +78,7 @@ sc3 = "OneHandHarry;OneFingerFrank;1;1;1;50"
 -- readGame sc3 == Just gc3
 -- showGame gc3 = sc3
 
---game four moves from end, complex case
---doesn't work, need to make a better case 
+--one player is dominating 
 gc4 = Game {playerOne = [1,1,1,1,1,1,1,1,1], playerTwo = [4], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerTwo, turnCount = 20}
 sc4 = "TwoHandTerry;AmbidexterousAndy;1,1,1,1,1,1,1,1,1;4;2;20"
 -- expected return values...

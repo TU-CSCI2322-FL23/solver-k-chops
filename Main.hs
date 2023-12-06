@@ -37,8 +37,27 @@ main =
          Nothing -> putStrLn "Error, invalid game"
          Just game ->
             do
-               mapM_ (callCorrectFlag game) flags
-               print (bestMove game)
+               if HelpFlag `elem` flags
+                  then callHelpFlag
+               else if WinnerFlag `elem` flags
+                  then callWinnerFlag game
+               else if any isMoveFlag flags
+                     then let (MoveFlag m) = head $ filter isMoveFlag flags
+                          in if (VerboseFlag) `elem` flags
+                              then callVerboseFlag game (readMove m)
+                             else callMoveFlag game (readMove m)
+                    else if any isDepthFlag flags
+                           then let (DepthFlag d) = head $ filter isDepthFlag flags
+                                in  print $ whoMightWin game (read d)
+                           else print $ whoMightWin game 3
+
+isMoveFlag :: Flag -> Bool
+isMoveFlag (MoveFlag m) = True
+isMoveFlag anythingElse = False
+
+isDepthFlag :: Flag -> Bool
+isDepthFlag (DepthFlag d) = True
+isDepthFlag anythingElse = False
 
 readMove :: String -> Move
 readMove "Split" = Split
@@ -46,15 +65,6 @@ readMove move =
    case words move of
    ["Add", x, y]  -> Add (read x) (read y)
    _              -> error "not a valid move"
-
-callCorrectFlag :: Game -> Flag -> IO ()
-callCorrectFlag game flag =
-   case flag of
-      HelpFlag          -> callHelpFlag
-      WinnerFlag        -> callWinnerFlag game
-      DepthFlag depth   -> callDepthFlag game (read depth)
-      MoveFlag move     -> callMoveFlag game (readMove move)
-      VerboseFlag       -> callVerboseFlag game
 
 callHelpFlag :: IO ()
 callHelpFlag =
@@ -66,11 +76,6 @@ callWinnerFlag game =
    do
       print $ bestMove game
 
-callDepthFlag :: Game -> Int -> IO ()
-callDepthFlag game depth =
-      do
-         print depth --placeholder until I get Ashwin's function
-      -- use (read DepthFlag) as cut-off param for new bestMove
            
 
 callMoveFlag :: Game -> Move -> IO ()
@@ -81,19 +86,11 @@ callMoveFlag game move =
          _ -> print $ makeMove game move
 
 
-callVerboseFlag :: Game -> IO ()
-callVerboseFlag game = do print "verbose" --placeholder until I get the rateGame
-   --do
-      --case rateGame of
-         --case for if move leads to winner
-         --case for if move leads to loser
-         --case for if move leads to tie
-         --case for game rating
-      --confused as to what it means by move
-
-
-
-
-
-
-
+callVerboseFlag :: Game -> Move -> IO ()
+callVerboseFlag game move = 
+   do
+      case makeMove game move of
+         Nothing -> error "not a valid move"
+         Just newGame -> do putStrLn $ show move
+                            putStrLn $ show newGame
+                            putStrLn $ show $ rateGame newGame

@@ -106,7 +106,7 @@ whoMightWin game depth
         in
             if null ratedGameList
                 then
-                    error "Depth Exceeds Lenght of Tree"
+                    error "Depth Exceeds Length of Tree"
             else
                 if (turn game == PlayerOne)
                     then maximumBy (comparing fst) ratedGameList
