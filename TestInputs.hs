@@ -79,14 +79,14 @@ sc3 = "OneHandHarry;OneFingerFrank;1;1;1;50"
 
 --game four moves from end, complex case
 --doesn't work, need to make a better case 
-gc4 = Game {playerOne = [1], playerTwo = [1], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 50}
-sc4 = "TwoHandTerry;AmbidexterousAndy;4;3;1;50"
+gc4 = Game {playerOne = [1,1,1,1,1,1,1,1,1], playerTwo = [4], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerTwo, turnCount = 20}
+sc4 = "TwoHandTerry;AmbidexterousAndy;1,1,1,1,1,1,1,1,1;4;2;20"
 -- expected return values...
--- legalMoves gc4 [Add 0 0]
+-- legalMoves gc4 [Add 0 0, Add 0 1, Add 0 2, Add 0 3, Add 0 4, Add 0 5, Add 0 6, Add 0 7, Add 0 8]
 -- getResult gc4 = Nothing
 -- whoWillWin gc4 = Winner PlayerOne
--- bestMove gc4 = (Add 0 0)
--- makeMove gc4 (Add 0 0) = Just (Game {playerOne = [4,3], playerTwo = [1,1], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 49})
+-- bestMove gc4 = Nothing
+-- makeMove gc4 (Add 0 5) = Just (Game {playerOne = [1,1,1,1,1,1,1,1], playerTwo = [4], p1Name = "TwoHandTerry", p2Name = "AmbidexterousAndy", turn = PlayerOne, turnCount = 19})
 -- readGame sc4 == Just gc4
 -- showGame gc4 = sc4
 
