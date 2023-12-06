@@ -141,3 +141,6 @@ prettyShowGame game = putStrLn ((p1Name game) ++ " -> " ++ hand1 ++ "\n --------
           turnName :: String
           turnName = if ((turn game) == PlayerOne) then p1Name game else p2Name game
 
+
+                   
+
