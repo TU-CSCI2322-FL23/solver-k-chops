@@ -1,3 +1,4 @@
+module TestInputs where
 import Chopsticks
 
 -- finished game
