@@ -67,6 +67,14 @@ handDiff playerA playerB = (length playerA) - (length playerB)
 --     in
 --         sum dist
 
+scoreCurrentPlayer :: Game -> Int
+scoreCurrentPlayer game =
+    if (turn game) == PlayerOne
+        then
+            1
+    else
+        1
+
 scoreWinnerLoser :: Game -> Int
 scoreWinnerLoser game =
     let result = getResult game
@@ -82,8 +90,9 @@ rateGame game =
     let
         p1HandDiff = handDiff (playerOne game) (playerTwo game)
         p1WinScore = scoreWinnerLoser game
+        p1CurrentTurn = scoreCurrentPlayer game
     in
-        p1HandDiff + p1WinScore
+        (p1HandDiff * 2) +  p1CurrentTurn + (p1WinScore * 3) 
 
         
 whoMightWin :: Game -> Int -> (Int, Maybe Move)
