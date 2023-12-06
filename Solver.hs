@@ -85,23 +85,20 @@ rateGame game =
     in
         p1HandDiff + p1WinScore
 
-
-bestMoveRating :: Game -> [(Int,Move)] -> (Int,Move)  
-bestMoveRating game lst =
-    if (turn game == PlayerOne)
-        then
-            (maximumBy (comparing fst) lst) --https://stackoverflow.com/questions/18118280/finding-maximum-element-in-a-list-of-tuples
-    else
-        (minimumBy (comparing fst) lst)
         
-whoMightWin :: Game -> Int -> (Int, Move)
-whoMightWin game depth 
-    |depth == 0 = bestMoveRating game
+whoMightWin :: Game -> Int -> (Int, Maybe Move)
+whoMightWin game depth
+    | depth <= 0 = (rateGame game, Nothing)
     | otherwise =
         let
             allMoves = legalMoves game
             newGames = mapMaybe (gameMovePair game) allMoves
-            outcomes = map (\(move, newGame) -> (move, whoMightWin newGame (depth - 1))) newGames
+            ratedGameList = map (\(move, newGame) -> (fst $ whoMightWin newGame (depth - 1), Just move)) newGames
         in
-
-            
+            if null ratedGameList
+                then
+                    error "Depth Exceeds Lenght of Tree"
+            else
+                if (turn game == PlayerOne)
+                    then maximumBy (comparing fst) ratedGameList
+                else minimumBy (comparing fst) ratedGameList
