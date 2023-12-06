@@ -1,7 +1,8 @@
 module Solver where
 import Chopsticks
 import Data.Maybe
-
+import Data.List
+import Data.Ord
 gameOutcome :: Game -> [Game]
 gameOutcome game =
         let
@@ -9,7 +10,7 @@ gameOutcome game =
         in
             mapMaybe (\move -> makeMove game move) allMoves
 
-whoWillWin :: Game ->  Result
+whoWillWin :: Game -> Result
 whoWillWin game =
     case (getResult game) of
         Just result -> result --this takes care of the case if player already won
@@ -84,29 +85,23 @@ rateGame game =
     in
         p1HandDiff + p1WinScore
 
---probem with just and need to add ranking
-whoMightWin :: Game -> Int -> Maybe (Int, Maybe Move)
+
+bestMoveRating :: Game -> [(Int,Move)] -> (Int,Move)  
+bestMoveRating game lst =
+    if (turn game == PlayerOne)
+        then
+            (maximumBy (comparing fst) lst) --https://stackoverflow.com/questions/18118280/finding-maximum-element-in-a-list-of-tuples
+    else
+        (minimumBy (comparing fst) lst)
+        
+whoMightWin :: Game -> Int -> (Int, Move)
 whoMightWin game depth 
-    | depth <= 0 = Just (rateGame game, Nothing)
+    |depth == 0 = bestMoveRating game
     | otherwise =
         let
-            -- newGames = mapMaybe (makeMove game) (legalMoves game)
-            -- outcomes = map (\g -> whoMightWin g (depth - 1)) newGames
-            --need to find logic to create a ratedGameList
+            allMoves = legalMoves game
+            newGames = mapMaybe (gameMovePair game) allMoves
+            outcomes = map (\(move, newGame) -> (move, whoMightWin newGame (depth - 1))) newGames
         in
-            if (turn game == PlayerOne)
-                then
-                    Just (maximumBy  (comparing fst) ratedGameList) --https://stackoverflow.com/questions/18118280/finding-maximum-element-in-a-list-of-tuples
-            else
-                Just (minimumBy (comparing fst) ratedGameList)
-        
 
--- whoMightWin :: Game -> Int -> Maybe (Maybe Move, Int)
--- whoMightWin game depth =
---             if depth == 0
---                 then Just (bestMove game, rateGame game)
---                 else  Just (move, rating)
---                     where
---                         outcomes = map (\(g) -> whoMightWin game (depth - 1))
---                         move = bestMove (head outcomes)
---                         rating = rateGame (head outcomes)
+            
